@@ -18,3 +18,7 @@ scp root@packit.dide.ic.ac.uk:hardware-configuration.nix .
 ```
 nix run github:nix-community/nixos-anywhere -- --flake .#wpia-packit root@packit.dide.ic.ac.uk
 ```
+
+```
+ssh-keygen -f '/home/pl2113/.ssh/known_hosts' -R 'packit.dide.ic.ac.uk'
+```

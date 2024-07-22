@@ -1,9 +1,9 @@
 { modulesPath, config, lib, pkgs, ... }: {
   imports = [
     (modulesPath + "/installer/scan/not-detected.nix")
-    # (modulesPath + "/profiles/qemu-guest.nix")
     ./disk-config.nix
     ./hardware-configuration.nix
+    ./services.nix
   ];
 
   boot.loader.grub = {
@@ -13,7 +13,6 @@
     efiInstallAsRemovable = true;
   };
 
-  services.openssh.enable = true;
   networking.hostName = "wpia-packit";
   networking.firewall.enable = false;
 
@@ -21,6 +20,7 @@
     pkgs.curl
     pkgs.gitMinimal
     pkgs.vim
+    pkgs.outpack_server
   ];
 
   users.users.root.openssh.authorizedKeys.keys = [
