@@ -13,7 +13,7 @@ let
   };
 
   cfg = config.services.outpack;
-  enabledInstances = lib.filterAttrs (name: cfg: cfg.enable) cfg.instances;
+  enabledInstances = lib.filterAttrs (name: instanceCfg: instanceCfg.enable) cfg.instances;
 in
 {
   options.services.outpack = {
@@ -23,16 +23,16 @@ in
   };
 
   config.systemd.services = lib.mapAttrs'
-    (name: cfg: lib.nameValuePair "outpack-${name}" {
+    (name: instanceCfg: lib.nameValuePair "outpack-${name}" {
       description = "Outpack ${name}";
       wantedBy = [ "multi-user.target" ];
       preStart = ''
-        if [[ ! -d ${cfg.path} ]]; then
-          ${pkgs.outpack_server}/bin/outpack init --require-complete-tree --use-file-store ${cfg.path}
+        if [[ ! -d ${instanceCfg.path} ]]; then
+          ${pkgs.outpack_server}/bin/outpack init --require-complete-tree --use-file-store ${instanceCfg.path}
         fi
       '';
       serviceConfig = {
-        ExecStart = "${pkgs.outpack_server}/bin/outpack start-server --root ${cfg.path}";
+        ExecStart = "${pkgs.outpack_server}/bin/outpack start-server --root ${instanceCfg.path}";
       };
     })
     enabledInstances;

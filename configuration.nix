@@ -6,6 +6,10 @@
     ./services.nix
   ];
 
+  nixpkgs.config.allowUnfreePredicate = pkg: builtins.elem (lib.getName pkg) [
+    "vault"
+  ];
+
   boot.loader.grub = {
     # no need to set devices, disko will add all devices that have a EF02 partition to the list already
     # devices = [ ];
@@ -21,6 +25,8 @@
     pkgs.gitMinimal
     pkgs.vim
     pkgs.outpack_server
+    pkgs.podman
+    pkgs.vault
   ];
 
   users.users.root.openssh.authorizedKeys.keys = [

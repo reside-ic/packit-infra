@@ -10,10 +10,12 @@
         disko.nixosModules.disko
         ./configuration.nix
         ./modules/outpack.nix
+        ./modules/packit.nix
+
         {
           nixpkgs.overlays = [
             (final: prev: {
-              inherit (self.packages.x86_64-linux) outpack_server;
+              inherit (self.packages.x86_64-linux) outpack_server packit;
             })
           ];
         }
@@ -24,6 +26,7 @@
       let pkgs = import nixpkgs { system = "x86_64-linux"; };
       in {
         outpack_server = pkgs.callPackage ./packages/outpack_server.nix { };
+        packit = pkgs.callPackage ./packages/packit.nix { };
       };
   };
 }
