@@ -7,7 +7,6 @@
   };
 
   services.packit-api = {
-    image = "mrcide/packit-api:0dd3d4e";
     instances.priority-pathogens = {
       enable = true;
       api_root = "https://packit.dide.ic.ac.uk/priority-pathogens/packit/api";
@@ -47,7 +46,7 @@
         };
 
         "~ ^/priority-pathogens(?<path>/.*)$" = {
-          root = pkgs.packit.override {
+          root = pkgs.packit-app.override {
             PUBLIC_URL = "/priority-pathogens";
           };
           tryFiles = "$path /index.html =404";

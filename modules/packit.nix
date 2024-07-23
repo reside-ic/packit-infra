@@ -34,32 +34,27 @@ let
 in
 {
   options.services.packit-api = {
-    image = lib.mkOption {
-      type = types.str;
-    };
     instances = lib.mkOption {
       type = types.attrsOf (types.submodule instanceModule);
     };
   };
 
-  config.virtualisation.oci-containers.containers = lib.mapAttrs'
+  config.systemd.services = lib.mapAttrs'
     (name: instanceCfg: lib.nameValuePair "packit-api-${name}" {
-      image = cfg.image;
-      extraOptions = [ "--network=host" ];
-      inherit (instanceCfg) environmentFiles;
-      environment = {
-        PACKIT_DB_URL = instanceCfg.database.url;
-        PACKIT_DB_USER = instanceCfg.database.user;
-        PACKIT_DB_PASSWORD = instanceCfg.database.password;
-
-        PACKIT_API_ROOT = instanceCfg.api_root;
-        PACKIT_AUTH_METHOD = "github";
-        PACKIT_AUTH_REDIRECT_URL = instanceCfg.redirect_url;
-
-        PACKIT_AUTH_GITHUB_ORG = "mrc-ide";
-        PACKIT_AUTH_GITHUB_TEAM = "priority-pathogens";
-
-        # PACKIT_CORS_ALLOWED_ORIGINS
+      description = "Packit API Server ${name}";
+      wantedBy = [ "multi-user.target" ];
+      serviceConfig = {
+        ExecStart = "${pkgs.packit-api}/bin/packit-api";
+        Environment = [
+          "PACKIT_DB_URL=${instanceCfg.database.url}"
+          "PACKIT_DB_USER=${instanceCfg.database.user}"
+          "PACKIT_DB_PASSWORD=${instanceCfg.database.password}"
+          "PACKIT_API_ROOT=${instanceCfg.api_root}"
+          "PACKIT_AUTH_METHOD=github"
+          "PACKIT_AUTH_REDIRECT_URL=${instanceCfg.redirect_url}"
+          "PACKIT_AUTH_GITHUB_ORG=mrc-ide"
+          "PACKIT_AUTH_GITHUB_TEAM=priority-pathogens"
+        ];
       };
     })
     enabledInstances;

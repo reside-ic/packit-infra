@@ -25,8 +25,6 @@
     pkgs.gitMinimal
     pkgs.vim
     pkgs.outpack_server
-    pkgs.podman
-    pkgs.vault
   ];
 
   users.users.root.openssh.authorizedKeys.keys = [
