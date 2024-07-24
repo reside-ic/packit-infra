@@ -37,6 +37,11 @@
       in
       {
         inherit (pkgs) outpack_server packit-app;
+        update-ssh-keys = pkgs.writeShellApplication {
+          name = "update-ssh-keys";
+          runtimeInputs = [ pkgs.curl ];
+          text = builtins.readFile ./scripts/update-ssh-keys.sh;
+        };
       };
 
     checks.x86_64-linux.boots =

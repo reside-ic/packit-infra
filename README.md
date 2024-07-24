@@ -64,11 +64,23 @@ TODO: how do you forward
 nix flake check
 ```
 
+## How do I add new SSH keys?
+
+The keys are fetched from GitHub and committed into this repository as the `authorized_keys` files.
+You can edit the `scripts/update-ssh-keys.sh` file to update the list of users.
+
+Afterwards run the following to fetch the new keys:
+```sh
+nix run .#update-ssh-keys
+```
+
 ## How do I update outpack_server or Packit?
 
 TODO
 
 ## How do I update nixpkgs?
+
+TODO
 
 ## How do I provision a new machine?
 

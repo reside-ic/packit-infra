@@ -31,6 +31,12 @@ in
       description = "the domain name on which the service is hosted";
       type = types.str;
     };
+    sslCertificate = lib.mkOption {
+      type = types.path;
+    };
+    sslCertificateKey = lib.mkOption {
+      type = types.path;
+    };
     instances = lib.mkOption {
       type = types.attrsOf (types.submodule instanceModule);
       default = { };
@@ -79,8 +85,7 @@ in
       enable = true;
       virtualHosts."${cfg.domain}" = {
         forceSSL = true;
-        sslCertificate = "/var/secrets/packit.cert";
-        sslCertificateKey = "/var/secrets/packit.key";
+        inherit (cfg) sslCertificate sslCertificateKey;
 
         locations = foreachInstance (name: instanceCfg: {
           "= /${name}" = {

@@ -25,9 +25,8 @@
     pkgs.outpack_server
   ];
 
-  # TODO: fetch these from GitHub
-  users.users.root.openssh.authorizedKeys.keys = [
-    "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIExujNUD1itJ1VfxZexhJAYYNXatDgQJdCQL+qidb5fF pl2113@WPIA-DIDELT455"
+  users.users.root.openssh.authorizedKeys.keyFiles = [
+    ./authorized_keys
   ];
 
   system.stateVersion = "24.05";

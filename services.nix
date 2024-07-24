@@ -4,6 +4,8 @@
   services.multi-packit = {
     enable = true;
     domain = "packit.dide.ic.ac.uk";
+    sslCertificate = "/var/secrets/packit.cert";
+    sslCertificateKey = "/var/secrets/packit.key";
     instances = {
       priority-pathogens = {
         github_org = "mrc-ide";
