@@ -5,21 +5,32 @@
   inputs.disko.inputs.nixpkgs.follows = "nixpkgs";
 
   outputs = { nixpkgs, nixpkgs-unstable, disko, self, ... }: {
+    overlays.default = (final: prev: {
+      outpack_server = final.callPackage ./packages/outpack_server { };
+      packit-app = final.callPackage ./packages/packit/packit-app.nix { };
+      packit-api = final.callPackage ./packages/packit/packit-api.nix { };
+    });
+
     nixosConfigurations.wpia-packit = nixpkgs.lib.nixosSystem {
       system = "x86_64-linux";
       modules = [
         disko.nixosModules.disko
         ./configuration.nix
-        ./modules/outpack.nix
-        ./modules/packit.nix
+        ./disk-config.nix
+        ./hardware-configuration.nix
 
+        { nixpkgs.overlays = [ self.overlays.default ]; }
+      ];
+    };
+
+    nixosConfigurations.vm = nixpkgs.lib.nixosSystem {
+      system = "x86_64-linux";
+      modules = [
+        ./configuration.nix
+        ./tests/setup.nix
         {
-          nixpkgs.overlays = [
-            (final: prev: {
-              inherit (self.packages.x86_64-linux)
-                outpack_server packit-app packit-api;
-            })
-          ];
+          services.getty.autologinUser = "root";
+          nixpkgs.overlays = [ self.overlays.default ];
         }
       ];
     };
@@ -34,5 +45,14 @@
         packit-app = pkgs.callPackage ./packages/packit/packit-app.nix { };
         packit-api = pkgs-unstable.callPackage ./packages/packit/packit-api.nix { };
       };
+
+    checks.x86_64-linux.boots =
+      let
+        pkgs = import nixpkgs {
+          system = "x86_64-linux";
+          overlays = [ self.overlays.default ];
+        };
+      in
+      pkgs.callPackage ./tests/boot.nix { };
   };
 }

@@ -1,14 +1,15 @@
 { modulesPath, config, lib, pkgs, ... }: {
   imports = [
     (modulesPath + "/installer/scan/not-detected.nix")
-    ./disk-config.nix
-    ./hardware-configuration.nix
     ./services.nix
+    ./modules/outpack.nix
+    ./modules/packit-api.nix
+    ./modules/multi-packit.nix
   ];
 
-  nixpkgs.config.allowUnfreePredicate = pkg: builtins.elem (lib.getName pkg) [
-    "vault"
-  ];
+  # nixpkgs.config.allowUnfreePredicate = pkg: builtins.elem (lib.getName pkg) [
+  #   "vault"
+  # ];
 
   boot.loader.grub = {
     # no need to set devices, disko will add all devices that have a EF02 partition to the list already

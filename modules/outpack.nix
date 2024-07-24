@@ -3,7 +3,11 @@ let
   inherit (lib) types;
   instanceModule = { name, ... }: {
     options = {
-      enable = lib.mkEnableOption "the outpack server";
+      port = lib.mkOption {
+        description = "Port on which the outpack server listens to";
+        default = 8000;
+        type = types.port;
+      };
       path = lib.mkOption {
         description = "Path to the outpack store";
         default = "/var/lib/outpack/${name}";
@@ -13,12 +17,12 @@ let
   };
 
   cfg = config.services.outpack;
-  enabledInstances = lib.filterAttrs (name: instanceCfg: instanceCfg.enable) cfg.instances;
 in
 {
   options.services.outpack = {
     instances = lib.mkOption {
       type = types.attrsOf (types.submodule instanceModule);
+      default = { };
     };
   };
 
@@ -35,5 +39,5 @@ in
         ExecStart = "${pkgs.outpack_server}/bin/outpack start-server --root ${instanceCfg.path}";
       };
     })
-    enabledInstances;
+    cfg.instances;
 }
