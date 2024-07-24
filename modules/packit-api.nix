@@ -47,26 +47,12 @@ let
   };
 
   cfg = config.services.packit-api;
-  foreachInstance = f: lib.mkMerge (lib.mapAttrsToList f cfg.instances);
-
-  mkInstanceEnv = instanceCfg: {
-    SERVER_PORT = toString instanceCfg.port;
-    PACKIT_OUTPACK_SERVER_URL = instanceCfg.outpack_server_url;
-    PACKIT_DB_URL = instanceCfg.database.url;
-    PACKIT_DB_USER = instanceCfg.database.user;
-    PACKIT_DB_PASSWORD = instanceCfg.database.password;
-    PACKIT_API_ROOT = instanceCfg.api_root;
-    PACKIT_AUTH_METHOD = "github";
-    PACKIT_AUTH_REDIRECT_URL = instanceCfg.authentication.redirect_url;
-    PACKIT_AUTH_GITHUB_ORG = instanceCfg.authentication.org;
-    PACKIT_AUTH_GITHUB_TEAM = instanceCfg.authentication.team;
-  };
 in
 {
   options.services.packit-api = {
     image = lib.mkOption {
-      type = types.nullOr types.str;
-      default = null;
+      type = types.str;
+      default = "mrcide/packit-api:${lib.substring 0 7 pkgs.packit-app.src.rev}";
     };
 
     instances = lib.mkOption {
@@ -75,26 +61,37 @@ in
     };
   };
 
+  # Building gradle apps with Nix is a hot mess. Gradle doesn't separate
+  # fetching dependencies from building, which makes it very difficult to make
+  # reproducible builds. nixpkgs is full of hacks to work around this, I tried
+  # to reproduce some of them to build packit but nothing worked.
+  # 
+  # There's now a half decent solution available on the master branch of
+  # nixpkgs we may want to consider in the future:
+  # https://github.com/NixOS/nixpkgs/blob/master/pkgs/development/tools/build-managers/gradle/README.md
+  #
+  # Until this point, we just run the docker image that is build by the
+  # Packit CI.
   config.virtualisation.oci-containers.containers =
-    lib.mkIf (cfg.image != null) (foreachInstance (name: instanceCfg: {
-      "packit-api-${name}" = {
-        image = cfg.image;
-        extraOptions = [ "--network=host" ];
-        inherit (instanceCfg) environmentFiles;
-        environment = mkInstanceEnv instanceCfg;
-      };
-    }));
-
-  config.systemd.services =
-    lib.mkIf (cfg.image == null) (foreachInstance (name: instanceCfg: {
-      "packit-api-${name}" = {
-        description = "Packit API Server ${name}";
-        wantedBy = [ "multi-user.target" ];
-        serviceConfig = {
-          ExecStart = "${pkgs.packit-api}/bin/packit-api";
-          Environment = lib.mapAttrsToList (k: v: "${k}=${v}");
-          EnvironmentFile = instanceCfg.environmentFiles;
+    lib.mkMerge (lib.mapAttrsToList
+      (name: instanceCfg: {
+        "packit-api-${name}" = {
+          image = cfg.image;
+          extraOptions = [ "--network=host" ];
+          inherit (instanceCfg) environmentFiles;
+          environment = {
+            SERVER_PORT = toString instanceCfg.port;
+            PACKIT_OUTPACK_SERVER_URL = instanceCfg.outpack_server_url;
+            PACKIT_DB_URL = instanceCfg.database.url;
+            PACKIT_DB_USER = instanceCfg.database.user;
+            PACKIT_DB_PASSWORD = instanceCfg.database.password;
+            PACKIT_API_ROOT = instanceCfg.api_root;
+            PACKIT_AUTH_METHOD = "github";
+            PACKIT_AUTH_REDIRECT_URL = instanceCfg.authentication.redirect_url;
+            PACKIT_AUTH_GITHUB_ORG = instanceCfg.authentication.org;
+            PACKIT_AUTH_GITHUB_TEAM = instanceCfg.authentication.team;
+          };
         };
-      };
-    }));
+      })
+      cfg.instances);
 }

@@ -1,6 +1,9 @@
-{ pkgs }:
-pkgs.nixosTest {
+{ pkgs, inputs }:
+pkgs.testers.runNixOSTest {
   name = "boot";
+  node.specialArgs = {
+    inherit inputs;
+  };
   nodes.machine = { config, ... }: {
     imports = [
       ../configuration.nix
