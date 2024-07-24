@@ -16,7 +16,7 @@ pkgs.testers.runNixOSTest {
 
     machine.wait_for_unit("multi-user.target")
     response = machine.wait_until_succeeds(
-      "curl -s --fail --location --insecure https://packit.dide.ic.ac.uk/priority-pathogens/packit/api/auth/config"
+      "curl -s --fail --location --insecure https://localhost/priority-pathogens/packit/api/auth/config"
     )
     data = json.loads(response)
     assert data["enableGithubLogin"] == True

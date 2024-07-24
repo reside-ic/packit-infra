@@ -46,23 +46,20 @@ typically need to do it.
 nixos-rebuild repl --flake .#wpia-packit
 ```
 
-This will start a REPL in which the config
-
 ## How do I start a local VM?
 
 ```sh
-nixos-rebuild build-vm --flake .#vm
-./result/bin/run-wpia-packit-vm
+nix run .#start-vm
 ```
 
 This starts a local VM running in QEMU. Handy to check everything works as
-expected before pushing. Nginx will still expect the hostname to be
-`packit.dide.ic.ac.uk`, but uses a self-signed certificate.
+expected before deploying.
 
-A `/etc/hosts` entry is setup on the VM, meaning
-`curl --insecure https://packit.dide.ic.ac.uk` should work.
+It will forward port 443 of the VM onto port 8443, meaning you may visit
+https://localhost:8443/ once the VM has started.
 
-TODO: how do you forward
+Nginx is configured using a self-signed certificate, which will cause some
+browser warnings.
 
 ## How do I run the integration tests?
 
@@ -86,8 +83,12 @@ TODO
 
 ## How do I update nixpkgs?
 
-TODO
+```
+nix flake update
+```
+
+To switch to a new major version, you should edit the URL at the top of `flake.nix`.
 
 ## How do I provision a new machine?
 
-Still a TODO. See <notes.md>
+Still a TODO. See `notes.md`.

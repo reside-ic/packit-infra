@@ -1,8 +1,6 @@
-{ pkgs, ... }:
+{ pkgs, lib, config, localhost, ... }:
 {
-  networking.extraHosts = ''
-    127.0.0.1 packit.dide.ic.ac.uk
-  '';
+  services.multi-packit.domain = lib.mkForce "localhost";
 
   systemd.services."generate-secrets" = {
     wantedBy = [
@@ -17,7 +15,7 @@
       mkdir -p /var/secrets
       ${pkgs.openssl}/bin/openssl \
         req -x509 -days 365 \
-        -subj "/CN=packit.dide.ic.ac.uk" \
+        -subj "/CN=localhost" \
         -newkey rsa:2048 -noenc \
         -keyout /var/secrets/packit.key -out /var/secrets/packit.cert
       chown nginx:nginx /var/secrets/packit.key

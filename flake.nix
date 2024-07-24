@@ -24,7 +24,14 @@
       modules = [
         ./configuration.nix
         ./tests/setup.nix
-        { nixpkgs.overlays = [ self.overlays.default ]; }
+        {
+          nixpkgs.overlays = [ self.overlays.default ];
+          virtualisation.vmVariant.virtualisation.forwardPorts = [{
+            from = "host";
+            host.port = 8443;
+            guest.port = 443;
+          }];
+        }
       ];
     };
 
@@ -52,6 +59,7 @@
               --use-substitutes
           '';
         };
+        start-vm = self.nixosConfigurations."vm".config.system.build.vm;
       };
 
     checks.x86_64-linux.boots =
