@@ -13,16 +13,13 @@ with the tool by using `nix shell nixpkgs#nixos-rebuild`.
 TODO: add a `nix develop` to `flake.nix` that brings a shell with the right
 tools available.
 
-## How do I build the deployment?
+## How do I deploy to the server?
 
 ```sh
-nixos-rebuild build --flake .#wpia-packit
+nix run .#deploy
 ```
 
-This is useful to check syntax and that everything builds, but you don't
-typically need to do it.
-
-## How do I deploy to the server?
+or equivalently
 
 ```sh
 nixos-rebuild switch --flake .#wpia-packit \
@@ -34,18 +31,27 @@ The `--use-substitutes` flag allows the target machine to download packages
 straight from the NixOS public binary cache instead of them being pushed from
 your local machine. This is generally faster.
 
+## How do I build the deployment?
+
+```sh
+nixos-rebuild build --flake .#wpia-packit
+```
+
+This is useful to check syntax and that everything builds, but you don't
+typically need to do it.
+
 ## How do I inspect the configuration? 
 
 ```sh
-nixos-rebuild repl --flake .#vm
+nixos-rebuild repl --flake .#wpia-packit
 ```
 
-This will start a local 
+This will start a REPL in which the config
 
 ## How do I start a local VM?
 
 ```sh
-nixos-rebuild build-vm --flake .#test-vm
+nixos-rebuild build-vm --flake .#vm
 ./result/bin/run-wpia-packit-vm
 ```
 

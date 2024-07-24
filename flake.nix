@@ -42,6 +42,16 @@
           runtimeInputs = [ pkgs.curl ];
           text = builtins.readFile ./scripts/update-ssh-keys.sh;
         };
+        deploy = pkgs.writeShellApplication {
+          name = "deploy";
+          runtimeInputs = [ pkgs.nixos-rebuild ];
+          text = ''
+            nixos-rebuild switch \
+              --flake ${self}#wpia-packit \
+              --target-host root@packit.dide.ic.ac.uk \
+              --use-substitutes
+          '';
+        };
       };
 
     checks.x86_64-linux.boots =
