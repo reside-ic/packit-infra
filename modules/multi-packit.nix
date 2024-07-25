@@ -85,6 +85,10 @@ in
       enable = true;
       virtualHosts."${cfg.domain}" = {
         forceSSL = true;
+        extraConfig = ''
+          client_max_body_size 100M;
+        '';
+
         inherit (cfg) sslCertificate sslCertificateKey;
 
         locations = foreachInstance (name: instanceCfg: {

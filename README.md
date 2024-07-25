@@ -6,12 +6,12 @@ You need Nix installed on your local dev machine, with flakes enabled. If you
 don't have Nix installed, you can use SSH onto the server and use it to run the
 commands. Obviously this doesn't work for initial provisioning.
 
-You also need the `nixos-rebuild` tool. If running NixOS this should already by
-available.  If you've install Nix on a non-NixOS machine, you can enter a shell
-with the tool by using `nix shell nixpkgs#nixos-rebuild`.
+Some of the steps below require tools that might not be installed by default.
+You can enter a shell that provides all of them using
 
-TODO: add a `nix develop` to `flake.nix` that brings a shell with the right
-tools available.
+```sh
+nix develop
+```
 
 ## How do I deploy to the server?
 
@@ -92,6 +92,32 @@ update the associated hashes. For example, in
 `packages/outpack_server/default.nix`, replace the `cargoHash` line with
 `cargoHash = lib.fakeHash;`. Build the package and nix will fail and give the
 expected hash to use. Similarly, `npmDepsHash` needs to be updated for Packit.
+
+## How do I add a new Packit instance?
+
+1. Decide on a name for the instance. The will appear in the URL.
+1. Decide on a GitHub organization and team used for access control. All members of this organisation will be allowed to access the instance.
+1. Create a new GitHub application:
+   1. Go to https://github.com/settings/developers
+   1. Click on "New OAuth App"
+   1. Fill in the application information
+       - Homepage: `https://packit.dide.ic.ac.uk/NAME`
+       - Callback URL: `https://packit.dide.ic.ac.uk/NAME/packit/api/login/oauth2/code/github`
+   1. Click "Register Application"
+   1. Copy the Client ID
+   1. Generate and copy a client secret
+   1. Click "Update Application"
+   1. SSH onto `packit.dide.ic.ac.uk` and create a file named `/var/secrets/oauth-NAME` containing the client ID and secret:
+       ```
+       PACKIT_GITHUB_CLIENT_ID=xxxx
+       PACKIT_GITHUB_CLIENT_SECRET=xxxx
+       ```
+1. Edit `services.nix` by adding a new entry to the `services.multi-packit.instances`
+   attribute set, populating the Github org and team. Choose a new pair of port
+   numbers for outpack_server and the packit API.
+
+TODO: improve managments of secrets. In particular, these should go in Vault and get fetch at some point.
+TODO: Can we streamline this and use a single Github App for all instances?
 
 ## How do I update nixpkgs?
 

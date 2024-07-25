@@ -50,7 +50,7 @@
           text = builtins.readFile ./scripts/update-ssh-keys.sh;
         };
         deploy = pkgs.writeShellApplication {
-          name = "deploy";
+          name = "deploy-wpia-packit";
           runtimeInputs = [ pkgs.nixos-rebuild ];
           text = ''
             nixos-rebuild switch \
@@ -70,5 +70,18 @@
         };
       in
       pkgs.callPackage ./tests/boot.nix { inherit inputs; };
+
+    devShells.x86_64-linux.default =
+      let
+        pkgs = import nixpkgs {
+          system = "x86_64-linux";
+        };
+      in
+      pkgs.mkShell {
+        buildInputs = [
+          pkgs.nix-prefetch-github
+          pkgs.nixos-rebuild
+        ];
+      };
   };
 }

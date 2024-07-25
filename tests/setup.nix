@@ -21,6 +21,7 @@
       chown nginx:nginx /var/secrets/packit.key
 
       touch /var/secrets/oauth-priority-pathogens
+      touch /var/secrets/oauth-reside
     '';
   };
 
