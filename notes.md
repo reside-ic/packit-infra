@@ -32,3 +32,19 @@ vault kv get -field=value /secret/packit/ssl/production/cert | ssh root@packit.d
 vault kv get -field=value /secret/packit/ssl/production/key | ssh root@packit.dide.ic.ac.uk tee /var/secrets/packit.key
 ```
 
+# Creating a new OAuth token
+
+1. Go to https://github.com/settings/developers
+2. homepage: `https://packit.dide.ic.ac.uk/priority-pathogens`
+   callback URL: `https://packit.dide.ic.ac.uk/priority-pathogens/packit/api/login/oauth2/code/github`
+3. Click "Register Application"
+4. Copy the Client ID
+5. Generate and copy a client secret
+6. Click "Update Application"
+7. Create a file `/var/secrets/github-oauth` on the server with:
+```
+PACKIT_GITHUB_CLIENT_ID=xxxx
+PACKIT_GITHUB_CLIENT_SECRET=xxxx
+```
+
+These secrets are stored in Vault at `/secret/packit/oauth/production`.

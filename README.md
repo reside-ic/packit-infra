@@ -95,29 +95,13 @@ expected hash to use. Similarly, `npmDepsHash` needs to be updated for Packit.
 
 ## How do I add a new Packit instance?
 
-1. Decide on a name for the instance. The will appear in the URL.
-1. Decide on a GitHub organization and team used for access control. All members of this organisation will be allowed to access the instance.
-1. Create a new GitHub application:
-   1. Go to https://github.com/settings/developers
-   1. Click on "New OAuth App"
-   1. Fill in the application information
-       - Homepage: `https://packit.dide.ic.ac.uk/NAME`
-       - Callback URL: `https://packit.dide.ic.ac.uk/NAME/packit/api/login/oauth2/code/github`
-   1. Click "Register Application"
-   1. Copy the Client ID
-   1. Generate and copy a client secret
-   1. Click "Update Application"
-   1. SSH onto `packit.dide.ic.ac.uk` and create a file named `/var/secrets/oauth-NAME` containing the client ID and secret:
-       ```
-       PACKIT_GITHUB_CLIENT_ID=xxxx
-       PACKIT_GITHUB_CLIENT_SECRET=xxxx
-       ```
-1. Edit `services.nix` by adding a new entry to the `services.multi-packit.instances`
-   attribute set, populating the Github org and team. Choose a new pair of port
-   numbers for outpack_server and the packit API.
+Edit `services.nix` by adding a new entry to the `services.multi-packit.instances`
+attribute set. Choose a new pair of unused port numbers for the outpack server
+and for the packit API server. A GitHub organization and team needs to be
+specified. All members of this organisation will be allowed to access the
+instance.
 
-TODO: improve managments of secrets. In particular, these should go in Vault and get fetch at some point.
-TODO: Can we streamline this and use a single Github App for all instances?
+TODO: users need to be granted additional permissions manually.
 
 ## How do I update nixpkgs?
 

@@ -1,4 +1,4 @@
-{ pkgs, inputs, ... }: {
+{ lib, pkgs, inputs, ... }: {
   imports = [
     ./disk-config.nix
     ./modules/multi-packit.nix
@@ -24,10 +24,20 @@
     pkgs.curl
     pkgs.vim
     pkgs.outpack_server
+
+    (pkgs.writeShellApplication {
+      name = "fetch-secrets";
+      runtimeInputs = [ pkgs.vault ];
+      text = builtins.readFile ./scripts/fetch-secrets.sh;
+    })
   ];
 
   users.users.root.openssh.authorizedKeys.keyFiles = [
     ./authorized_keys
+  ];
+
+  nixpkgs.config.allowUnfreePredicate = pkg: builtins.elem (lib.getName pkg) [
+    "vault"
   ];
 
   system.stateVersion = "24.05";

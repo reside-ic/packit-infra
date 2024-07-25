@@ -37,6 +37,9 @@ in
     sslCertificateKey = lib.mkOption {
       type = types.path;
     };
+    githubOAuthSecret = lib.mkOption {
+      type = types.path;
+    };
     instances = lib.mkOption {
       type = types.attrsOf (types.submodule instanceModule);
       default = { };
@@ -77,7 +80,7 @@ in
         database.url = "jdbc:postgresql://localhost:5432/${name}?stringtype=unspecified";
         database.user = name;
         database.password = name;
-        environmentFiles = [ "/var/secrets/oauth-${name}" ];
+        environmentFiles = [ cfg.githubOAuthSecret ];
       };
     });
 

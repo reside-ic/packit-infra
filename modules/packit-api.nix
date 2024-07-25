@@ -40,7 +40,7 @@ let
         type = types.str;
       };
       environmentFiles = lib.mkOption {
-        type = with types; listOf path;
+        type = types.listOf types.path;
         default = [ ];
       };
     };
