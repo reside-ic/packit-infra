@@ -17,7 +17,8 @@
   };
 
   networking.hostName = "wpia-packit";
-  networking.firewall.enable = false;
+  networking.firewall.enable = true;
+  networking.firewall.allowedTCPPorts = [ 22 80 443 ];
 
   environment.systemPackages = [
     pkgs.curl
