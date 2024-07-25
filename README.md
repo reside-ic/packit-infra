@@ -79,7 +79,19 @@ nix run .#update-ssh-keys
 
 ## How do I update outpack_server or Packit?
 
-TODO
+```
+nix-prefetch-github --json mrc-ide outpack_server > packages/outpack_server/sources.json
+nix-prefetch-github --json mrc-ide packit > packages/packit/sources.json
+```
+
+The `nix-prefetch-github` command also accepts a `--rev` argument which may be
+used to specify a branch name.
+
+If the project being updated has modified its dependencies, you will need to
+update the associated hashes. For example, in
+`packages/outpack_server/default.nix`, replace the `cargoHash` line with
+`cargoHash = lib.fakeHash;`. Build the package and nix will fail and give the
+expected hash to use. Similarly, `npmDepsHash` needs to be updated for Packit.
 
 ## How do I update nixpkgs?
 
