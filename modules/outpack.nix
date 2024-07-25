@@ -36,7 +36,7 @@ in
         fi
       '';
       serviceConfig = {
-        ExecStart = "${pkgs.outpack_server}/bin/outpack start-server --root ${instanceCfg.path}";
+        ExecStart = "${pkgs.outpack_server}/bin/outpack start-server --root ${instanceCfg.path} --location 127.0.0.1:${instanceCfg.port}";
       };
     })
     cfg.instances;
