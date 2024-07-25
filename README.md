@@ -61,16 +61,23 @@ https://localhost:8443/ once the VM has started.
 Nginx is configured using a self-signed certificate, which will cause some
 browser warnings.
 
+Packit is configured to use GitHub authentication, but it does not have any
+OAuth client id or secret setup. TODO: use basic auth for the local VM?
+
 ## How do I run the integration tests?
 
 ```sh
 nix flake check
 ```
 
+This doesn't test that much yet, just that the Packit API eventually comes up.
+We should at least try to interact with the API a little.
+
 ## How do I add new SSH keys?
 
-The keys are fetched from GitHub and committed into this repository as the `authorized_keys` files.
-You can edit the `scripts/update-ssh-keys.sh` file to update the list of users.
+The keys are fetched from GitHub and committed into this repository as the
+`authorized_keys` files. You can edit the `scripts/update-ssh-keys.sh` file to
+update the list of users.
 
 Afterwards run the following to fetch the new keys:
 ```sh
@@ -113,4 +120,4 @@ To switch to a new major version, you should edit the URL at the top of `flake.n
 
 ## How do I provision a new machine?
 
-Still a TODO. See `notes.md`.
+See [`PROVISIONING.md`](PROVISIONING.md).
