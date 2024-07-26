@@ -128,6 +128,7 @@ The initial user needs to be granted the ADMIN role manually.
 1. SSH onto the server.
 1. Run `grant-role <instance> <username> ADMIN` where `<instance>` is the name
    of the instance and `<username>` is your GitHub username.
+1. Log out and back in for the changes to take effect.
 
 Afterwards permissions may be managed through the web UI.
 
