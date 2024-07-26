@@ -6,6 +6,9 @@ You need Nix installed on your local dev machine, with flakes enabled. If you
 don't have Nix installed, you can use SSH onto the server and use it to run the
 commands. Obviously this doesn't work for initial provisioning.
 
+TODO: maybe create some users on the server so we don't have to operate as root
+for everything.
+
 You can enable flakes by creating a `~/.config/nix/nix.conf` file:
 ```
 experimental-features = nix-command flakes
