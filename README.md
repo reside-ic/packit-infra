@@ -6,6 +6,11 @@ You need Nix installed on your local dev machine, with flakes enabled. If you
 don't have Nix installed, you can use SSH onto the server and use it to run the
 commands. Obviously this doesn't work for initial provisioning.
 
+You can enable flakes by creating a `~/.config/nix/nix.conf` file:
+```
+experimental-features = nix-command flakes
+```
+
 Some of the steps below require tools that might not be installed by default.
 You can enter a shell that provides all of them using
 
@@ -103,14 +108,16 @@ expected hash to use. Similarly, `npmDepsHash` needs to be updated for Packit.
 ## How do I add a new Packit instance?
 
 Edit `services.nix` by adding a new entry to the `services.multi-packit.instances`
-attribute set. Choose a new pair of unused port numbers for the outpack server
-and for the packit API server. A GitHub organization and team needs to be
-specified. All members of this organisation will be allowed to access the
-instance.
+attribute set. The name of the attribute will determine the URL of the
+instance. Choose a new pair of unused port numbers for the outpack server and
+for the packit API server.
+
+A GitHub organization and team needs to be specified. All members of this
+organisation will be allowed to access the instance.
 
 TODO: users need to be granted additional permissions manually.
 
-## How do I update nixpkgs?
+## How do I update NixOS?
 
 ```
 nix flake update
