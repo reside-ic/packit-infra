@@ -30,6 +30,7 @@
     pkgs.curl
     pkgs.vim
     pkgs.outpack_server
+    pkgs.gitMinimal
 
     (pkgs.writeShellApplication {
       name = "fetch-secrets";
