@@ -39,6 +39,10 @@ The `--use-substitutes` flag allows the target machine to download packages
 straight from the NixOS public binary cache instead of them being pushed from
 your local machine. This is generally faster.
 
+TODO: doing builds locally and then uploading them is pretty inefficient.
+There's almost certainly a way to do the build remotely and not have to transfer
+anything.
+
 ## How do I build the deployment?
 
 ```sh
