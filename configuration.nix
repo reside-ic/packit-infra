@@ -37,6 +37,12 @@
       runtimeInputs = [ pkgs.vault ];
       text = builtins.readFile ./scripts/fetch-secrets.sh;
     })
+
+    (pkgs.writeShellApplication {
+      name = "grant-role";
+      runtimeInputs = [ pkgs.postgresql ];
+      text = builtins.readFile ./scripts/grant-role.sh;
+    })
   ];
 
   users.users.root.openssh.authorizedKeys.keyFiles = [

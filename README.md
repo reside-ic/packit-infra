@@ -122,7 +122,14 @@ for the packit API server.
 A GitHub organization and team needs to be specified. All members of this
 organisation will be allowed to access the instance.
 
-TODO: users need to be granted additional permissions manually.
+The initial user needs to be granted the ADMIN role manually.
+
+1. Log in to the instance with your GitHub account.
+1. SSH onto the server.
+1. Run `grant-role <instance> <username> ADMIN` where `<instance>` is the name
+   of the instance and `<username>` is your GitHub username.
+
+Afterwards permissions may be managed through the web UI.
 
 ## How do I update NixOS?
 
