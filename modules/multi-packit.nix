@@ -81,6 +81,7 @@ in
         database.user = name;
         database.password = name;
         environmentFiles = [ cfg.githubOAuthSecret ];
+        environment.PACKIT_CORS_ALLOWED_ORIGINS = "https://${cfg.domain}";
       };
     });
 

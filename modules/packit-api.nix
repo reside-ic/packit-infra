@@ -43,6 +43,10 @@ let
         type = types.listOf types.path;
         default = [ ];
       };
+      environment = lib.mkOption {
+        type = types.attrsOf types.str;
+        default = { };
+      };
     };
   };
 
@@ -90,7 +94,7 @@ in
             PACKIT_AUTH_REDIRECT_URL = instanceCfg.authentication.redirect_url;
             PACKIT_AUTH_GITHUB_ORG = instanceCfg.authentication.org;
             PACKIT_AUTH_GITHUB_TEAM = instanceCfg.authentication.team;
-          };
+          } // instanceCfg.environment;
         };
       })
       cfg.instances);
