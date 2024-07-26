@@ -80,7 +80,10 @@ in
         database.url = "jdbc:postgresql://localhost:5432/${name}?stringtype=unspecified";
         database.user = name;
         database.password = name;
-        environmentFiles = [ cfg.githubOAuthSecret ];
+        environmentFiles = [
+          cfg.githubOAuthSecret
+          "/var/secrets/packit-jwt"
+        ];
         environment.PACKIT_CORS_ALLOWED_ORIGINS = "https://${cfg.domain}";
       };
     });
@@ -114,6 +117,22 @@ in
           };
         });
       };
+    };
+
+    systemd.services."generate-jwt-secret" = {
+      wantedBy = foreachInstance (name: _: [ "podman-packit-api-${name}.service" ]);
+      before = foreachInstance (name: _: [ "podman-packit-api-${name}.service" ]);
+
+      serviceConfig.Type = "oneshot";
+
+      script = ''
+        if [[ ! -f /var/secrets/packit-jwt ]]; then
+          mkdir -p /var/secrets
+          cat > /var/secrets/packit-jwt <<EOF
+        PACKIT_JWT_SECRET=$(${pkgs.openssl}/bin/openssl rand -hex 32)
+        EOF
+        fi
+      '';
     };
   };
 }
