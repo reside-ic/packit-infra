@@ -102,6 +102,7 @@ in
           "~ ^/${name}(?<path>/.*)$" = {
             root = pkgs.packit-app.override {
               PUBLIC_URL = "/${name}";
+              PACKIT_NAMESPACE = name;
             };
             tryFiles = "$path /index.html =404";
           };

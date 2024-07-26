@@ -1,4 +1,9 @@
-{ fetchFromGitHub, buildNpmPackage, lib, PUBLIC_URL ? null }:
+{ fetchFromGitHub
+, buildNpmPackage
+, lib
+, PUBLIC_URL ? null
+, PACKIT_NAMESPACE ? null
+}:
 buildNpmPackage rec {
   name = "packit-app";
   src = fetchFromGitHub (lib.importJSON ./sources.json);
@@ -17,4 +22,5 @@ buildNpmPackage rec {
   '';
 
   inherit PUBLIC_URL;
+  REACT_APP_PACKIT_NAMESPACE = PACKIT_NAMESPACE;
 }
