@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Packit</title>
+  </head>
+  <body>
+    <h1>Packit</h1>
+    <p>
+      <ul>
+        {% for name in instances -%}
+          <li><a href="/{{ name }}/">{{ name }}</a></li>
+        {% endfor %}
+      </ul>
+    </p>
+  </body>
+</html>
+

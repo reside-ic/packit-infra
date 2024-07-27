@@ -23,6 +23,18 @@ let
   cfg = config.services.multi-packit;
   foreachInstance = f: lib.mkMerge (lib.mapAttrsToList f cfg.instances);
 
+  landingPage = pkgs.runCommand "packit-index"
+    {
+      data = pkgs.writers.writeJSON "values.json" {
+        instances = lib.attrNames cfg.instances;
+      };
+      template = ../index.html.jinja;
+      nativeBuildInputs = [ pkgs.jinja2-cli ];
+    } ''
+    mkdir -p $out
+    jinja2 $template $data > $out/index.html
+  '';
+
 in
 {
   options.services.multi-packit = {
@@ -94,10 +106,12 @@ in
         forceSSL = true;
         extraConfig = ''
           client_max_body_size 100M;
+          absolute_redirect OFF;
         '';
 
         inherit (cfg) sslCertificate sslCertificateKey;
 
+        root = landingPage;
         locations = foreachInstance (name: instanceCfg: {
           "= /${name}" = {
             return = "301 /${name}/";
