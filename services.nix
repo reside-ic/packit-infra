@@ -27,6 +27,15 @@
           packit = 8081;
         };
       };
+
+      malariaverse-sitefiles = {
+        github_org = "mrc-ide";
+        github_team = "malaria-orderly";
+        ports = {
+          outpack = 8002;
+          packit = 8082;
+        };
+      };
     };
   };
 }

@@ -41,11 +41,13 @@
         let pkgs = import nixpkgs ({ system = "x86_64-linux"; } // pkgsArgs);
         in {
           inherit (pkgs) outpack_server packit-app;
+
           update-ssh-keys = pkgs.writeShellApplication {
             name = "update-ssh-keys";
             runtimeInputs = [ pkgs.curl ];
             text = builtins.readFile ./scripts/update-ssh-keys.sh;
           };
+
           deploy = pkgs.writeShellApplication {
             name = "deploy-wpia-packit";
             runtimeInputs = [ pkgs.nixos-rebuild ];
@@ -56,6 +58,22 @@
                 --use-substitutes
             '';
           };
+
+          diff = pkgs.writeShellApplication {
+            name = "diff";
+            runtimeInputs = [ pkgs.nix pkgs.nix-diff ];
+            text = ''
+              current=$(ssh root@packit.dide.ic.ac.uk readlink /run/current-system)
+              nix-copy-closure --from root@packit.dide.ic.ac.uk "$current"
+
+              # In theory .drvPath should allow us to use string interpolation
+              # instead of re-evaluating the flake, but for some reason it
+              # pulls all the build-time dependencies.
+              target=$(nix path-info --derivation .#nixosConfigurations.wpia-packit.config.system.build.toplevel)
+              nix-diff "$@" "$current" "$target"
+            '';
+          };
+
           start-vm = self.nixosConfigurations."vm".config.system.build.vm;
         };
 

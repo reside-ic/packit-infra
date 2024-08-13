@@ -58,6 +58,19 @@ typically need to do it.
 nixos-rebuild repl --flake .#wpia-packit
 ```
 
+## How do I visualize the effect of my changes?
+
+```
+nix run .#diff
+```
+
+This will download the system that is currently running on the server and
+compare it with what would be deployed using [nix-diff](https://github.com/Gabriella439/nix-diff).
+
+`nix-diff` will omit derivations' environment comparison if some dependencies
+already differ. `nix run .#diff -- --environment` can help print all of these,
+but is likely to be very verbose.
+
 ## How do I start a local VM?
 
 ```sh
