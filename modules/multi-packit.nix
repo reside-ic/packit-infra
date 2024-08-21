@@ -105,7 +105,7 @@ in
       virtualHosts."${cfg.domain}" = {
         forceSSL = true;
         extraConfig = ''
-          client_max_body_size 100M;
+          client_max_body_size 2048M;
           absolute_redirect OFF;
         '';
 
