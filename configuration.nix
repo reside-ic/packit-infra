@@ -43,6 +43,15 @@
       runtimeInputs = [ pkgs.postgresql ];
       text = builtins.readFile ./scripts/grant-role.sh;
     })
+
+    (pkgs.writeShellApplication {
+      name = "create-basic-user";
+      runtimeInputs = [
+        pkgs.postgresql
+        pkgs.apacheHttpd
+      ];
+      text = builtins.readFile ./scripts/create-basic-user.sh;
+    })
   ];
 
   users.users.root.openssh.authorizedKeys.keyFiles = [

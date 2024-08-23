@@ -27,15 +27,19 @@ let
       database.password = lib.mkOption {
         type = types.str;
       };
-      authentication.redirect_url = lib.mkOption {
+      authentication.method = lib.mkOption {
+        description = "Authentication method";
+        type = types.enum [ "basic" "github" ];
+      };
+      authentication.github.redirect_url = lib.mkOption {
         description = "URL to which to redirect following an authentication attempt";
         type = types.str;
       };
-      authentication.org = lib.mkOption {
+      authentication.github.org = lib.mkOption {
         description = "GitHub organisation used for authentication";
         type = types.str;
       };
-      authentication.team = lib.mkOption {
+      authentication.github.team = lib.mkOption {
         description = "GitHub team used for authentication";
         type = types.str;
       };
@@ -77,25 +81,28 @@ in
   # Until this point, we just run the docker image that is build by the
   # Packit CI.
   config.virtualisation.oci-containers.containers =
-    lib.mkMerge (lib.mapAttrsToList
-      (name: instanceCfg: {
-        "packit-api-${name}" = {
-          image = cfg.image;
-          extraOptions = [ "--network=host" ];
-          inherit (instanceCfg) environmentFiles;
-          environment = {
-            SERVER_PORT = toString instanceCfg.port;
-            PACKIT_OUTPACK_SERVER_URL = instanceCfg.outpack_server_url;
-            PACKIT_DB_URL = instanceCfg.database.url;
-            PACKIT_DB_USER = instanceCfg.database.user;
-            PACKIT_DB_PASSWORD = instanceCfg.database.password;
-            PACKIT_API_ROOT = instanceCfg.api_root;
-            PACKIT_AUTH_METHOD = "github";
-            PACKIT_AUTH_REDIRECT_URL = instanceCfg.authentication.redirect_url;
-            PACKIT_AUTH_GITHUB_ORG = instanceCfg.authentication.org;
-            PACKIT_AUTH_GITHUB_TEAM = instanceCfg.authentication.team;
-          } // instanceCfg.environment;
-        };
-      })
-      cfg.instances);
+    lib.mkMerge
+      (lib.mapAttrsToList
+        (name: instanceCfg: {
+          "packit-api-${name}" = {
+            image = "${image.finalImageName}:${image.finalImageTag}@${image.imageDigest}";
+            imageFile = pkgs.dockerTools.pullImage image;
+            extraOptions = [ "--network=host" ];
+            inherit (instanceCfg) environmentFiles;
+            environment = {
+              SERVER_PORT = toString instanceCfg.port;
+              PACKIT_OUTPACK_SERVER_URL = instanceCfg.outpack_server_url;
+              PACKIT_DB_URL = instanceCfg.database.url;
+              PACKIT_DB_USER = instanceCfg.database.user;
+              PACKIT_DB_PASSWORD = instanceCfg.database.password;
+              PACKIT_API_ROOT = instanceCfg.api_root;
+              PACKIT_AUTH_METHOD = instanceCfg.authentication.method;
+            } // (lib.optionalAttrs (instanceCfg.authentication.method == "github") {
+              PACKIT_AUTH_REDIRECT_URL = instanceCfg.authentication.github.redirect_url;
+              PACKIT_AUTH_GITHUB_ORG = instanceCfg.authentication.github.org;
+              PACKIT_AUTH_GITHUB_TEAM = instanceCfg.authentication.github.team;
+            }) // instanceCfg.environment;
+          };
+        })
+        cfg.instances);
 }

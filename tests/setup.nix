@@ -1,6 +1,10 @@
 { pkgs, lib, config, localhost, ... }:
 {
-  services.multi-packit.domain = lib.mkForce "localhost";
+  services.multi-packit = {
+    domain = lib.mkForce "localhost";
+    authenticationMethod = lib.mkForce "basic";
+    corsAllowedOrigins = lib.mkForce "https://localhost:8443";
+  };
 
   systemd.services."generate-secrets" = {
     wantedBy = [
@@ -13,15 +17,14 @@
 
     script = ''
       mkdir -p /var/secrets
-      ${pkgs.openssl}/bin/openssl \
-        req -x509 -days 365 \
-        -subj "/CN=localhost" \
-        -newkey rsa:2048 -noenc \
-        -keyout /var/secrets/packit.key -out /var/secrets/packit.cert
-      chown nginx:nginx /var/secrets/packit.key
-
-      touch /var/secrets/oauth-priority-pathogens
-      touch /var/secrets/oauth-reside
+      if [[ ! -f /var/secrets/packit.key ]]; then
+        ${pkgs.openssl}/bin/openssl \
+          req -x509 -days 365 \
+          -subj "/CN=localhost" \
+          -newkey rsa:2048 -noenc \
+          -keyout /var/secrets/packit.key -out /var/secrets/packit.cert
+        chown nginx:nginx /var/secrets/packit.key
+      fi
     '';
   };
 

@@ -4,6 +4,7 @@
   services.multi-packit = {
     enable = true;
     domain = "packit.dide.ic.ac.uk";
+    authenticationMethod = "github";
 
     sslCertificate = "/var/secrets/packit.cert";
     sslCertificateKey = "/var/secrets/packit.key";

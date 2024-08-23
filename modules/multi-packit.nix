@@ -12,7 +12,6 @@ let
         description = "GitHub team used for authentication";
         type = types.str;
       };
-
       ports = {
         outpack = lib.mkOption { type = types.port; };
         packit = lib.mkOption { type = types.port; };
@@ -43,6 +42,9 @@ in
       description = "the domain name on which the service is hosted";
       type = types.str;
     };
+    authenticationMethod = lib.mkOption {
+      type = types.enum [ "basic" "github" ];
+    };
     sslCertificate = lib.mkOption {
       type = types.path;
     };
@@ -55,6 +57,10 @@ in
     instances = lib.mkOption {
       type = types.attrsOf (types.submodule instanceModule);
       default = { };
+    };
+    corsAllowedOrigins = lib.mkOption {
+      type = types.commas;
+      default = "https://${cfg.domain}";
     };
   };
 
@@ -86,17 +92,21 @@ in
         api_root = "https://${cfg.domain}/${name}/packit/api";
         port = instanceCfg.ports.packit;
         outpack_server_url = "http://localhost:${toString instanceCfg.ports.outpack}";
-        authentication.redirect_url = "https://${cfg.domain}/${name}/redirect";
-        authentication.org = instanceCfg.github_org;
-        authentication.team = instanceCfg.github_team;
+        authentication = {
+          method = cfg.authenticationMethod;
+          github.redirect_url = "https://${cfg.domain}/${name}/redirect";
+          github.org = instanceCfg.github_org;
+          github.team = instanceCfg.github_team;
+        };
         database.url = "jdbc:postgresql://localhost:5432/${name}?stringtype=unspecified";
         database.user = name;
         database.password = name;
         environmentFiles = [
-          cfg.githubOAuthSecret
           "/var/secrets/packit-jwt"
+        ] ++ lib.optionals (cfg.authenticationMethod == "github") [
+          cfg.githubOAuthSecret
         ];
-        environment.PACKIT_CORS_ALLOWED_ORIGINS = "https://${cfg.domain}";
+        environment.PACKIT_CORS_ALLOWED_ORIGINS = cfg.corsAllowedOrigins;
       };
     });
 
