@@ -114,6 +114,7 @@ nix run .#update-ssh-keys
 ```
 nix-prefetch-github --json mrc-ide outpack_server > packages/outpack_server/sources.json
 nix-prefetch-github --json mrc-ide packit > packages/packit/sources.json
+nix-prefetch-docker --json mrcide packit-api > packages/packit/image.json
 ```
 
 The `nix-prefetch-github` command also accepts a `--rev` argument which may be

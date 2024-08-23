@@ -55,18 +55,12 @@ let
   };
 
   cfg = config.services.packit-api;
+  image = lib.importJSON ../packages/packit/image.json;
 in
 {
-  options.services.packit-api = {
-    image = lib.mkOption {
-      type = types.str;
-      default = "mrcide/packit-api:${lib.substring 0 7 pkgs.packit-app.src.rev}";
-    };
-
-    instances = lib.mkOption {
-      type = types.attrsOf (types.submodule instanceModule);
-      default = { };
-    };
+  options.services.packit-api.instances = lib.mkOption {
+    type = types.attrsOf (types.submodule instanceModule);
+    default = { };
   };
 
   # Building gradle apps with Nix is a hot mess. Gradle doesn't separate
