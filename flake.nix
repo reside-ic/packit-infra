@@ -48,6 +48,12 @@
             text = builtins.readFile ./scripts/update-ssh-keys.sh;
           };
 
+          update-packit-image = pkgs.writeShellApplication {
+            name = "update-packit-image";
+            runtimeInputs = [ pkgs.jq pkgs.nix-prefetch-docker ];
+            text = builtins.readFile ./scripts/update-packit-image.sh;
+          };
+
           deploy = pkgs.writeShellApplication {
             name = "deploy-wpia-packit";
             runtimeInputs = [ pkgs.nixos-rebuild ];
@@ -86,6 +92,7 @@
         in pkgs.mkShell {
           buildInputs = [
             pkgs.nix-prefetch-github
+            pkgs.nix-prefetch-docker
             pkgs.nixos-rebuild
           ];
         };
