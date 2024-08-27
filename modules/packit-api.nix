@@ -55,13 +55,22 @@ let
   };
 
   cfg = config.services.packit-api;
-  image = lib.importJSON ../packages/packit/image.json;
+  image =
+    let
+      metadata = lib.importJSON ../packages/packit/image.json;
+      frontendRev = lib.substring 0 7 pkgs.packit-app.src.rev;
+    in
+    lib.throwIf (metadata.finalImageTag != frontendRev)
+      "Packit frontend and docker image versions do not match. Did you run `update-packit-image`?"
+      metadata;
 in
 {
-  options.services.packit-api.instances = lib.mkOption {
-    type = types.attrsOf (types.submodule instanceModule);
-    default = { };
-  };
+  options.services.packit-api.instances =
+    lib.mkOption
+      {
+        type = types.attrsOf (types.submodule instanceModule);
+        default = { };
+      };
 
   # Building gradle apps with Nix is a hot mess. Gradle doesn't separate
   # fetching dependencies from building, which makes it very difficult to make
