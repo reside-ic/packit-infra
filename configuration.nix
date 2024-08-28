@@ -1,10 +1,11 @@
 { lib, pkgs, inputs, ... }: {
   imports = [
     ./disk-config.nix
+    ./services.nix
     ./modules/multi-packit.nix
     ./modules/outpack.nix
     ./modules/packit-api.nix
-    ./services.nix
+    ./modules/metrics-proxy.nix
 
     inputs.disko.nixosModules.disko
   ];
@@ -18,7 +19,7 @@
 
   networking.hostName = "wpia-packit";
   networking.firewall.enable = true;
-  networking.firewall.allowedTCPPorts = [ 22 80 443 ];
+  networking.firewall.allowedTCPPorts = [ 22 80 443 9000 ];
 
   environment.systemPackages = [
     pkgs.curl
