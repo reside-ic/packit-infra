@@ -123,7 +123,8 @@ If the project being updated has modified its dependencies, you will need to
 update the associated hashes. For example, in
 `packages/outpack_server/default.nix`, replace the `cargoHash` line with
 `cargoHash = lib.fakeHash;`. Build the package and nix will fail and give the
-expected hash to use. Similarly, `npmDepsHash` needs to be updated for Packit.
+expected hash to use. Similarly, `npmDepsHash` and `gradleDepsHash` may need to
+be updated for Packit.
 
 ## How do I add a new Packit instance?
 

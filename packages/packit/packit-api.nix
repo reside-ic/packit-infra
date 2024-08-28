@@ -1,4 +1,16 @@
-{ fetchFromGitHub, stdenv, gradle, jre_headless, lib, perl, runtimeShell, writeText }:
+# Building with Gradle is a little tricky.
+#
+# As is usual with other build systems, we want to separate the dependency
+# download phase from the build phase. The download phase is a fixed-output
+# derivation, meaning its output hash is hardcoded, and it runs with network
+# access. The build phase runs in the sandbox without network access and does
+# not need a known output hash.
+#
+# Unfortunately Gradle doesn't have an easy way of just fetching the
+# dependencies without performing a full build. Therefore that's what we do: we
+# build the package once, throw away the result but keep the dependency cache.
+# The package is built a second time, using the same dependency cache.
+{ fetchFromGitHub, stdenv, gradle, jre_headless, lib, perl, runtimeShell, writeText, makeWrapper }:
 let
   gradleDepsHash = "sha256-HTpu1hMNol+Shi2P1GdBnO1oLlqqEWTezdmy4I9ijKY=";
 
@@ -57,16 +69,13 @@ in
 makePackage {
   name = "packit-api";
   gradleFlags = "--offline --init-script ${gradleInit}";
+  nativeBuildInputs = [ makeWrapper ];
   installPhase = ''
-    mkdir -p $out/bin $out/share/packit-api
-    install -m644 app/build/libs/app.jar $out/share/packit-api/packit-api.jar
+    mkdir -p $out/bin $out/share
+    install -m644 app/build/libs/app.jar $out/share/packit-api.jar
 
-    cat > $out/bin/packit-api <<EOF
-    #!${runtimeShell}
-    export JAVA_HOME=${jre_headless}
-    exec ${jre_headless}/bin/java -jar $out/share/packit-api/packit-api.jar "\$@"
-    EOF
-    chmod +x $out/bin/packit-api
+    makeWrapper ${jre_headless}/bin/java $out/bin/packit-api \
+      --add-flags "-jar $out/share/packit-api.jar"
   '';
 
   passthru.deps = deps;
