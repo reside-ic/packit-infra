@@ -134,7 +134,13 @@ in
     };
 
     services.metrics-proxy.endpoints = foreachInstance (name: instanceCfg: {
-      "/outpack_server/${name}" = "http://localhost:${toString instanceCfg.ports.outpack}/metrics";
+      "/outpack_server/${name}" = {
+        upstream = "http://localhost:${toString instanceCfg.ports.outpack}/metrics";
+        labels = {
+          job = "outpack_server";
+          project = name;
+        };
+      };
     });
 
     systemd.services."generate-jwt-secret" = {

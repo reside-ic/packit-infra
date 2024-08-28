@@ -12,7 +12,17 @@ in {
       default = 9000;
     };
     endpoints = lib.mkOption {
-      type = lib.types.attrsOf lib.types.str;
+      type = lib.types.attrsOf (lib.types.submodule {
+        options = {
+          upstream = lib.mkOption {
+            type = lib.types.str;
+          };
+          labels = lib.mkOption {
+            default = { };
+            type = lib.types.attrsOf lib.types.str;
+          };
+        };
+      });
       default = { };
     };
   };
@@ -28,11 +38,28 @@ in {
       root = pkgs.emptyDirectory;
       locations =
         let
-          mkLocation = name: url: lib.nameValuePair "= ${name}" {
-            proxyPass = url;
+          mkScrape = path: endpoint: {
+            targets = [ "${cfg.domain}:${builtins.toString cfg.port}" ];
+            labels = endpoint.labels // {
+              "__metrics_path__" = path;
+            };
+          };
+          scrapes = lib.mapAttrsToList mkScrape cfg.endpoints;
+          index = pkgs.writers.writeJSON "index.json" scrapes;
+          indexLocation = {
+            "/" = {
+              index = "index.json";
+              root = pkgs.runCommand "root" { } ''
+                mkdir -p $out
+                ln -s ${index} $out/index.json
+              '';
+            };
+          };
+          mkLocation = path: endpoint: lib.nameValuePair "= ${path}" {
+            proxyPass = endpoint.upstream;
           };
         in
-        lib.mapAttrs' mkLocation cfg.endpoints;
+        indexLocation // (lib.mapAttrs' mkLocation cfg.endpoints);
     };
   };
 }
