@@ -53,7 +53,7 @@
   services.metrics-proxy = {
     enable = true;
     domain = "packit.dide.ic.ac.uk";
-    endpoints."/node_exporter" = {
+    endpoints."node_exporter" = {
       upstream = "http://localhost:${toString config.services.prometheus.exporters.node.port}/metrics";
       labels.job = "machine-metrics";
     };

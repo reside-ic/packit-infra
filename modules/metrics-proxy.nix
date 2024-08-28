@@ -38,24 +38,22 @@ in {
       root = pkgs.emptyDirectory;
       locations =
         let
-          mkScrape = path: endpoint: {
+          mkTarget = path: endpoint: {
             targets = [ "${cfg.domain}:${builtins.toString cfg.port}" ];
             labels = endpoint.labels // {
-              "__metrics_path__" = path;
+              "__metrics_path__" = "/targets/${path}";
             };
           };
-          scrapes = lib.mapAttrsToList mkScrape cfg.endpoints;
-          index = pkgs.writers.writeJSON "index.json" scrapes;
+          targets = lib.mapAttrsToList mkTarget cfg.endpoints;
           indexLocation = {
-            "/" = {
-              index = "index.json";
-              root = pkgs.runCommand "root" { } ''
-                mkdir -p $out
-                ln -s ${index} $out/index.json
+            "= /targets" = {
+              alias = pkgs.writers.writeJSON "index.json" targets;
+              extraConfig = ''
+                default_type application/json;
               '';
             };
           };
-          mkLocation = path: endpoint: lib.nameValuePair "= ${path}" {
+          mkLocation = path: endpoint: lib.nameValuePair "= /targets/${path}" {
             proxyPass = endpoint.upstream;
           };
         in

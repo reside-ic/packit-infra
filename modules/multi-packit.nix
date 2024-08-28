@@ -134,7 +134,7 @@ in
     };
 
     services.metrics-proxy.endpoints = foreachInstance (name: instanceCfg: {
-      "/outpack_server/${name}" = {
+      "outpack_server/${name}" = {
         upstream = "http://localhost:${toString instanceCfg.ports.outpack}/metrics";
         labels = {
           job = "outpack_server";
