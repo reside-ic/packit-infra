@@ -15,7 +15,8 @@
     {
       overlays.default = (final: prev: {
         outpack_server = final.callPackage ./packages/outpack_server { };
-        packit-app = final.callPackage ./packages/packit { };
+        packit-app = final.callPackage ./packages/packit/packit-app.nix { };
+        packit-api = final.callPackage ./packages/packit/packit-api.nix { };
       });
 
       nixosConfigurations.wpia-packit = nixpkgs.lib.nixosSystem {
@@ -40,18 +41,12 @@
       packages.x86_64-linux =
         let pkgs = import nixpkgs ({ system = "x86_64-linux"; } // pkgsArgs);
         in {
-          inherit (pkgs) outpack_server packit-app;
+          inherit (pkgs) outpack_server packit-app packit-api;
 
           update-ssh-keys = pkgs.writeShellApplication {
             name = "update-ssh-keys";
             runtimeInputs = [ pkgs.curl ];
             text = builtins.readFile ./scripts/update-ssh-keys.sh;
-          };
-
-          update-packit-image = pkgs.writeShellApplication {
-            name = "update-packit-image";
-            runtimeInputs = [ pkgs.jq pkgs.nix-prefetch-docker ];
-            text = builtins.readFile ./scripts/update-packit-image.sh;
           };
 
           deploy = pkgs.writeShellApplication {
@@ -92,7 +87,6 @@
         in pkgs.mkShell {
           buildInputs = [
             pkgs.nix-prefetch-github
-            pkgs.nix-prefetch-docker
             pkgs.nixos-rebuild
           ];
         };

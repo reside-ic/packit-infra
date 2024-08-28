@@ -20,14 +20,9 @@
   networking.firewall.enable = true;
   networking.firewall.allowedTCPPorts = [ 22 80 443 ];
 
-  virtualisation.vmVariant.virtualisation.forwardPorts = [{
-    from = "host";
-    host.port = 8443;
-    guest.port = 443;
-  }];
-
   environment.systemPackages = [
     pkgs.curl
+    pkgs.htop
     pkgs.vim
     pkgs.outpack_server
     pkgs.gitMinimal

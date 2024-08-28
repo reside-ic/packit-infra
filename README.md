@@ -125,14 +125,6 @@ update the associated hashes. For example, in
 `cargoHash = lib.fakeHash;`. Build the package and nix will fail and give the
 expected hash to use. Similarly, `npmDepsHash` needs to be updated for Packit.
 
-Unfortunately the Packit API server isn't being built from source yet, and is
-instead run from a Docker image. The hashes of the Docker image need to be
-synchronized to match the version of the frontend, using the following command:
-
-```
-nix run .#update-packit-image
-```
-
 ## How do I add a new Packit instance?
 
 Edit `services.nix` by adding a new entry to the `services.multi-packit.instances`

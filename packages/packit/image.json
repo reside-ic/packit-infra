@@ -1,7 +1,0 @@
-{
-  "imageName": "mrcide/packit-api",
-  "imageDigest": "sha256:f88d42b7c2a64c9906a71b586e08e13928cd50f295a7a81303aa39e51665a090",
-  "sha256": "0xpdl06dh986xvv8plih2632n711410gglwvjccr6rf9vsjcc2jz",
-  "finalImageName": "mrcide/packit-api",
-  "finalImageTag": "7f89cfc"
-}

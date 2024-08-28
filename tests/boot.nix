@@ -19,6 +19,10 @@ pkgs.testers.runNixOSTest {
       "curl -s --fail --location --insecure https://localhost/priority-pathogens/packit/api/auth/config"
     )
     data = json.loads(response)
-    assert data["enableGithubLogin"] == True
+    assert data == {
+      "enableAuth": True,
+      "enableBasicLogin": True,
+      "enableGithubLogin": False,
+    }
   '';
 }

@@ -1,5 +1,14 @@
 { pkgs, lib, config, localhost, ... }:
 {
+  virtualisation.vmVariant = {
+    virtualisation.memorySize = 2048;
+    virtualisation.forwardPorts = [{
+      from = "host";
+      host.port = 8443;
+      guest.port = 443;
+    }];
+  };
+
   services.multi-packit = {
     domain = lib.mkForce "localhost";
     authenticationMethod = lib.mkForce "basic";

@@ -144,8 +144,8 @@ in
     };
 
     systemd.services."generate-jwt-secret" = {
-      wantedBy = foreachInstance (name: _: [ "podman-packit-api-${name}.service" ]);
-      before = foreachInstance (name: _: [ "podman-packit-api-${name}.service" ]);
+      wantedBy = foreachInstance (name: _: [ "packit-api-${name}.service" ]);
+      before = foreachInstance (name: _: [ "packit-api-${name}.service" ]);
 
       serviceConfig.Type = "oneshot";
 
