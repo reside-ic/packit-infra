@@ -12,10 +12,10 @@
 # The package is built a second time, using the same dependency cache.
 { fetchFromGitHub, stdenv, gradle, jre_headless, lib, perl, runtimeShell, writeText, makeWrapper }:
 let
-  gradleDepsHash = "sha256-HTpu1hMNol+Shi2P1GdBnO1oLlqqEWTezdmy4I9ijKY=";
+  sources = lib.importJSON ./sources.json;
 
   makePackage = args@{ nativeBuildInputs ? [ ], ... }: stdenv.mkDerivation (finalAttrs: {
-    src = fetchFromGitHub (lib.importJSON ./sources.json);
+    src = fetchFromGitHub sources.src;
     sourceRoot = "${finalAttrs.src.name}/api";
 
     nativeBuildInputs = [ gradle ] ++ nativeBuildInputs;
@@ -40,7 +40,7 @@ let
     '';
     outputHashAlgo = "sha256";
     outputHashMode = "recursive";
-    outputHash = gradleDepsHash;
+    outputHash = sources.gradleDepsHash;
   };
 
   gradleInit = writeText "init.gradle" ''
@@ -78,5 +78,5 @@ makePackage {
       --add-flags "-jar $out/share/packit-api.jar"
   '';
 
-  passthru.deps = deps;
+  passthru.gradleDeps = deps;
 }

@@ -4,10 +4,13 @@
 , PUBLIC_URL ? null
 , PACKIT_NAMESPACE ? null
 }:
+let
+  sources = lib.importJSON ./sources.json;
+in
 buildNpmPackage rec {
   name = "packit-app";
-  src = fetchFromGitHub (lib.importJSON ./sources.json);
-  npmDepsHash = "sha256-o//+q3trkCnKpSAWEHPZOeiMYxzKOvrGDgEv63BsnxI=";
+  src = fetchFromGitHub sources.src;
+  npmDepsHash = sources.npmDepsHash;
   sourceRoot = "${src.name}/app";
 
   installPhase = ''

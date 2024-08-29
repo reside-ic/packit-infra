@@ -1,8 +1,11 @@
 { rustPlatform, fetchFromGitHub, lib, openssl, pkg-config }:
+let
+  sources = lib.importJSON ./sources.json;
+in
 rustPlatform.buildRustPackage rec {
   name = "outpack_server";
-  src = fetchFromGitHub (lib.importJSON ./sources.json);
-  cargoHash = "sha256-4Jf5L+JUetHqYslVpHQOyXEpZvAIE5zD3f+2xeGhkoU=";
+  src = fetchFromGitHub sources.src;
+  cargoHash = sources.cargoDepsHash;
 
   buildInputs = [ openssl ];
   nativeBuildInputs = [ pkg-config ];

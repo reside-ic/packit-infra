@@ -1,6 +1,9 @@
 {
+  "src": {
     "owner": "mrc-ide",
     "repo": "outpack_server",
-    "rev": "d163cc0c9a10f94cc4ce70e4c6819515fa03cb45",
-    "hash": "sha256-Zpx95yKfTUVITZjfrsivK/1LRV3OugfrzPNMDxQugRg="
+    "rev": "1078d274bc929d73f8c03d28f0c64c72e99e1ab0",
+    "hash": "sha256-jHFCZASFBx0ZVzh+3SKQ0qHcEHwUhShnLQtZA9W51e0="
+  },
+  "cargoDepsHash": "sha256-9Ab7sYG/0C9x7+9ZPOhtrebVzHYxWeE3KLyeF4HHye0="
 }

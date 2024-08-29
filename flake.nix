@@ -14,6 +14,7 @@
     in
     {
       overlays.default = (final: prev: {
+        packit = final.callPackage ./packages/packit { };
         outpack_server = final.callPackage ./packages/outpack_server { };
         packit-app = final.callPackage ./packages/packit/packit-app.nix { };
         packit-api = final.callPackage ./packages/packit/packit-api.nix { };
@@ -41,13 +42,9 @@
       packages.x86_64-linux =
         let pkgs = import nixpkgs ({ system = "x86_64-linux"; } // pkgsArgs);
         in {
-          inherit (pkgs) outpack_server packit-app packit-api;
+          inherit (pkgs) outpack_server packit-app packit-api packit;
 
-          update-ssh-keys = pkgs.writeShellApplication {
-            name = "update-ssh-keys";
-            runtimeInputs = [ pkgs.curl ];
-            text = builtins.readFile ./scripts/update-ssh-keys.sh;
-          };
+          default = self.nixosConfigurations."wpia-packit".config.system.build.toplevel;
 
           deploy = pkgs.writeShellApplication {
             name = "deploy-wpia-packit";
@@ -58,6 +55,12 @@
                 --target-host root@packit.dide.ic.ac.uk \
                 --use-substitutes
             '';
+          };
+
+          update-ssh-keys = pkgs.writeShellApplication {
+            name = "update-ssh-keys";
+            runtimeInputs = [ pkgs.curl ];
+            text = builtins.readFile ./scripts/update-ssh-keys.sh;
           };
 
           diff = pkgs.writeShellApplication {
@@ -75,6 +78,7 @@
             '';
           };
 
+          update = pkgs.writers.writePython3Bin "update" { } ./scripts/update.py;
           start-vm = self.nixosConfigurations."vm".config.system.build.vm;
         };
 

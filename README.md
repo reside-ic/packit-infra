@@ -14,49 +14,39 @@ You can enable flakes by creating a `~/.config/nix/nix.conf` file:
 experimental-features = nix-command flakes
 ```
 
-Some of the steps below require tools that might not be installed by default.
-You can enter a shell that provides all of them using
-
-```sh
-nix develop
-```
-
 ## How do I deploy to the server?
 
 ```sh
 nix run .#deploy
 ```
 
-or equivalently
-
-```sh
-nixos-rebuild switch --flake .#wpia-packit \
-    --target-host root@packit.dide.ic.ac.uk \
-    --use-substitutes
-```
-
-The `--use-substitutes` flag allows the target machine to download packages
-straight from the NixOS public binary cache instead of them being pushed from
-your local machine. This is generally faster.
-
 TODO: doing builds locally and then uploading them is pretty inefficient.
 There's almost certainly a way to do the build remotely and not have to transfer
 anything.
 
+## How do I update outpack_server or Packit?
+
+```
+nix run .#update packit
+nix run .#update outpack_server
+```
+
+The sources are defined in files at `packages/{packit,outpack_server}/source.json`.
+The update script automatically fetches the latest revision from GitHub, and
+updates the necessary hashes.
+
+It also accepts a `--branch` argument which may be used to specify a branch
+name. Otherwise the default branch of the repository will be used (usually main
+or master).
+
 ## How do I build the deployment?
 
 ```sh
-nixos-rebuild build --flake .#wpia-packit
+nix build
 ```
 
 This is useful to check syntax and that everything builds, but you don't
-typically need to do it.
-
-## How do I inspect the configuration? 
-
-```sh
-nixos-rebuild repl --flake .#wpia-packit
-```
+typically need to do it. Deploying will do it implicitely.
 
 ## How do I visualize the effect of my changes?
 
@@ -108,23 +98,6 @@ Afterwards run the following to fetch the new keys:
 ```sh
 nix run .#update-ssh-keys
 ```
-
-## How do I update outpack_server or Packit?
-
-```
-nix-prefetch-github --json mrc-ide outpack_server > packages/outpack_server/sources.json
-nix-prefetch-github --json mrc-ide packit > packages/packit/sources.json
-```
-
-The `nix-prefetch-github` command also accepts a `--rev` argument which may be
-used to specify a branch name.
-
-If the project being updated has modified its dependencies, you will need to
-update the associated hashes. For example, in
-`packages/outpack_server/default.nix`, replace the `cargoHash` line with
-`cargoHash = lib.fakeHash;`. Build the package and nix will fail and give the
-expected hash to use. Similarly, `npmDepsHash` and `gradleDepsHash` may need to
-be updated for Packit.
 
 ## How do I add a new Packit instance?
 
