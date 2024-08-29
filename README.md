@@ -76,8 +76,13 @@ https://localhost:8443/ once the VM has started.
 Nginx is configured using a self-signed certificate, which will cause some
 browser warnings.
 
-Packit is configured to use GitHub authentication, but it does not have any
-OAuth client id or secret setup. TODO: use basic auth for the local VM?
+Packit is configured to use basic authentication, but no users exist by default.
+In the VM console, run the following:
+
+```
+create-basic-user <instance> "admin@localhost.com" password
+grant-role <instance> "admin@localhost.com" ADMIN
+``
 
 ## How do I run the integration tests?
 
@@ -98,6 +103,8 @@ Afterwards run the following to fetch the new keys:
 ```sh
 nix run .#update-ssh-keys
 ```
+
+and re-deploy to the server.
 
 ## How do I add a new Packit instance?
 
