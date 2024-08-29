@@ -104,7 +104,8 @@ Afterwards run the following to fetch the new keys:
 nix run .#update-ssh-keys
 ```
 
-and re-deploy to the server.
+Carefully review the changes to avoid locking yourself out and re-deploy to the
+server.
 
 ## How do I add a new Packit instance?
 
