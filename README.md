@@ -114,8 +114,18 @@ attribute set. The name of the attribute will determine the URL of the
 instance. Choose a new pair of unused port numbers for the outpack server and
 for the packit API server.
 
-A GitHub organization and team needs to be specified. All members of this
-organisation will be allowed to access the instance.
+A GitHub organisation and team needs to be specified. All members of this
+organisation/team will be allowed to access the instance. The team can be
+omitted or left blank, in which case any member of the organisation will have
+access.
+
+The Packit application on Github manually needs to be granted permission, by
+one of the organisation's admins, to access the organisation. See [the GitHub
+documentation][github-oauth-org]. Because we use a single OAuth app for all
+instances, this only needs to be done once per org, even if uses by multiple
+instances.
+
+[github-oauth-org]: https://docs.github.com/en/account-and-profile/setting-up-and-managing-your-personal-account-on-github/managing-your-membership-in-organizations/requesting-organization-approval-for-oauth-apps
 
 The initial user needs to be granted the ADMIN role manually.
 
