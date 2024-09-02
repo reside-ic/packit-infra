@@ -82,7 +82,7 @@ In the VM console, run the following:
 ```
 create-basic-user <instance> "admin@localhost.com" password
 grant-role <instance> "admin@localhost.com" ADMIN
-``
+```
 
 ## How do I run the integration tests?
 
