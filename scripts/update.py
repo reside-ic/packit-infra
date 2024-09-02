@@ -9,13 +9,13 @@
 #
 # This script does the same, but in an automated fashion.
 
-import subprocess
-import os.path
-import sys
-import re
 import argparse
-import os
 import json
+import os
+import os.path
+import re
+import subprocess
+import sys
 from urllib.request import urlopen
 
 PRELUDE = """
@@ -44,7 +44,7 @@ def fetch_latest_commit(owner, repo, branch):
 
 
 def commit_log(owner, repo, base, head):
-    url = f"https://api.github.com/repos/{owner}/{repo}/compare/{base}...{head}"
+    url = f"https://api.github.com/repos/{owner}/{repo}/compare/{base}...{head}"  # noqa: E501
     response = json.load(urlopen(url))
     commits = [c["commit"] for c in response["commits"]]
     messages = [c["message"].splitlines()[0] for c in commits]
@@ -148,9 +148,15 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--owner", help="Owner of source repository.")
     parser.add_argument("--repo", help="Name of source repository.")
-    parser.add_argument("--branch", help="Branch of the source repository to use.")
+    parser.add_argument(
+        "--branch", help="Branch of the source repository to use."
+    )
     parser.add_argument("--output", help="File in which to write the result.")
-    parser.add_argument("--force", action="store_true", help="Fetch the sources even if the commit sha is identical.")
+    parser.add_argument(
+        "--force",
+        action="store_true",
+        help="Fetch the sources even if the commit sha is identical.",
+    )
     parser.add_argument("name")
     g = parser.add_mutually_exclusive_group()
     g.add_argument("--deps", nargs="*", help="Dependency type to fetch")
@@ -186,8 +192,9 @@ if __name__ == "__main__":
 
     source_hash = prefetch_src(args.name, args.owner, args.repo, rev)
     deps_hash = {
-        dep: prefetch_dep(args.name, args.owner, args.repo, rev,
-                          source_hash, dep)
+        dep: prefetch_dep(
+            args.name, args.owner, args.repo, rev, source_hash, dep
+        )
         for dep in args.deps
     }
 
