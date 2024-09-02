@@ -41,7 +41,7 @@
 
       malariaverse-sitefiles = {
         github_org = "malariaverse";
-        github_team = "sitefiles";
+        github_team = "";
         ports = {
           outpack = 8002;
           packit = 8082;

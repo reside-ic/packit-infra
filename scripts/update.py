@@ -28,8 +28,6 @@ let
 
   overrideSource = p: owner: repo: rev: hash:
     p.overrideAttrs (old: { src = overrideGithub old.src owner repo rev; });
-
-  force = x: builtins.deepSeq x x;
 in
 """
 
@@ -43,6 +41,14 @@ def fetch_latest_commit(owner, repo, branch):
 
     url = f"https://api.github.com/repos/{owner}/{repo}/git/ref/heads/{branch}"
     return json.load(urlopen(url))["object"]["sha"]
+
+
+def commit_log(owner, repo, base, head):
+    url = f"https://api.github.com/repos/{owner}/{repo}/compare/{base}...{head}"
+    response = json.load(urlopen(url))
+    commits = [c["commit"] for c in response["commits"]]
+    messages = [c["message"].splitlines()[0] for c in commits]
+    return messages
 
 
 def nix_eval(expr, args):
@@ -77,9 +83,10 @@ let
   flake = builtins.getFlake cwd;
   package = flake.packages.${builtins.currentSystem}."${name}";
 in
-  force {
+  (x: builtins.deepSeq x x) {
     owner = package.src.owner;
     repo = package.src.repo;
+    rev = package.src.rev;
     attributes = builtins.attrNames package;
   }
 """
@@ -107,8 +114,8 @@ in
     })
 
 
-def prefetch_dep(name, owner, repo, rev, source_hash, attribute):
-    print(f"Fetching {attribute}", file=sys.stderr)
+def prefetch_dep(name, owner, repo, rev, source_hash, dep):
+    print(f"Fetching {dep} dependencies for {name}...", file=sys.stderr)
     expr = """
 { cwd, name, owner, repo, rev, sourceHash, attribute }:
 let
@@ -126,7 +133,7 @@ in
         "repo": repo,
         "rev": rev,
         "sourceHash": source_hash,
-        "attribute": attribute
+        "attribute": f"{dep}Deps",
     })
 
 
@@ -139,38 +146,48 @@ def extract_dep_name(attr):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument('--owner')
-    parser.add_argument('--repo')
-    parser.add_argument('--branch')
-    parser.add_argument('--output')
-    parser.add_argument('name')
+    parser.add_argument("--owner", help="Owner of source repository.")
+    parser.add_argument("--repo", help="Name of source repository.")
+    parser.add_argument("--branch", help="Branch of the source repository to use.")
+    parser.add_argument("--output", help="File in which to write the result.")
+    parser.add_argument("--force", action="store_true", help="Fetch the sources even if the commit sha is identical.")
+    parser.add_argument("name")
     g = parser.add_mutually_exclusive_group()
-    g.add_argument('--deps', nargs="*")
-    g.add_argument('--no-deps', dest='deps', action='store_const', const=())
+    g.add_argument("--deps", nargs="*", help="Dependency type to fetch")
+    g.add_argument("--no-deps", dest="deps", action="store_const", const=())
 
     args = parser.parse_args()
 
-    if args.owner is None or args.repo is None or args.deps is None:
-        metadata = evaluate_metadata(args.name)
-        if args.owner is None:
-            args.owner = metadata["owner"]
-        if args.repo is None:
-            args.repo = metadata["repo"]
-        if args.deps is None:
-            args.deps = [
-                name
-                for attr in metadata["attributes"]
-                if (name := extract_dep_name(attr))
-            ]
+    metadata = evaluate_metadata(args.name)
+    if args.owner is None:
+        args.owner = metadata["owner"]
+    if args.repo is None:
+        args.repo = metadata["repo"]
+    if args.deps is None:
+        args.deps = [
+            name
+            for attr in metadata["attributes"]
+            if (name := extract_dep_name(attr))
+        ]
 
     if args.output is None:
         args.output = os.path.join("packages", args.name, "sources.json")
 
     rev = fetch_latest_commit(args.owner, args.repo, args.branch)
+
+    if metadata["rev"] == rev:
+        print(f"{args.name} is already up-to-date at {rev}")
+        if not args.force:
+            sys.exit(0)
+    else:
+        print(f"Updating {args.name} from {metadata['rev']} to {rev}")
+        for m in commit_log(args.owner, args.repo, metadata["rev"], rev):
+            print(f"- {m}")
+
     source_hash = prefetch_src(args.name, args.owner, args.repo, rev)
     deps_hash = {
         dep: prefetch_dep(args.name, args.owner, args.repo, rev,
-                          source_hash, f"{dep}Deps")
+                          source_hash, dep)
         for dep in args.deps
     }
 
