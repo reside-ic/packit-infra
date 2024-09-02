@@ -16,7 +16,8 @@ import os.path
 import re
 import subprocess
 import sys
-from urllib.request import urlopen
+from urllib.request import urlopen, Request
+from urllib.parse import urljoin
 
 PRELUDE = """
 let
@@ -34,18 +35,24 @@ in
 SUPPORTED_DEPS = {"gradle", "cargo", "npm"}
 
 
+def github_api(path):
+    url = urljoin("https://api.github.com", path)
+    request = Request(url)
+    if token := os.environ.get("GITHUB_TOKEN"):
+        request.add_header("Authorization", f"Bearer {token}")
+    return json.load(urlopen(request))
+
+
 def fetch_latest_commit(owner, repo, branch):
     if branch is None:
-        url = f"https://api.github.com/repos/{owner}/{repo}"
-        branch = json.load(urlopen(url))["default_branch"]
+        branch = github_api(f"/repos/{owner}/{repo}")["default_branch"]
 
-    url = f"https://api.github.com/repos/{owner}/{repo}/git/ref/heads/{branch}"
-    return json.load(urlopen(url))["object"]["sha"]
+    response = github_api(f"/repos/{owner}/{repo}/git/ref/heads/{branch}")
+    return response["object"]["sha"]
 
 
 def commit_log(owner, repo, base, head):
-    url = f"https://api.github.com/repos/{owner}/{repo}/compare/{base}...{head}"  # noqa: E501
-    response = json.load(urlopen(url))
+    response = github_api("/repos/{owner}/{repo}/compare/{base}...{head}")
     commits = [c["commit"] for c in response["commits"]]
     messages = [c["message"].splitlines()[0] for c in commits]
     return messages
@@ -144,26 +151,7 @@ def extract_dep_name(attr):
         return None
 
 
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--owner", help="Owner of source repository.")
-    parser.add_argument("--repo", help="Name of source repository.")
-    parser.add_argument(
-        "--branch", help="Branch of the source repository to use."
-    )
-    parser.add_argument("--output", help="File in which to write the result.")
-    parser.add_argument(
-        "--force",
-        action="store_true",
-        help="Fetch the sources even if the commit sha is identical.",
-    )
-    parser.add_argument("name")
-    g = parser.add_mutually_exclusive_group()
-    g.add_argument("--deps", nargs="*", help="Dependency type to fetch")
-    g.add_argument("--no-deps", dest="deps", action="store_const", const=())
-
-    args = parser.parse_args()
-
+def update(args):
     metadata = evaluate_metadata(args.name)
     if args.owner is None:
         args.owner = metadata["owner"]
@@ -184,7 +172,7 @@ if __name__ == "__main__":
     if metadata["rev"] == rev:
         print(f"{args.name} is already up-to-date at {rev}")
         if not args.force:
-            sys.exit(0)
+            return
     else:
         print(f"Updating {args.name} from {metadata['rev']} to {rev}")
         for m in commit_log(args.owner, args.repo, metadata["rev"], rev):
@@ -211,3 +199,26 @@ if __name__ == "__main__":
 
     with open(args.output, "w") as f:
         json.dump(result, f, indent=2)
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--owner", help="Owner of source repository.")
+    parser.add_argument("--repo", help="Name of source repository.")
+    parser.add_argument(
+        "--branch", help="Branch of the source repository to use."
+    )
+    parser.add_argument("--output", help="File in which to write the result.")
+    parser.add_argument(
+        "--force",
+        action="store_true",
+        help="Fetch the sources even if the commit sha is identical.",
+    )
+    parser.add_argument("name")
+
+    g = parser.add_mutually_exclusive_group()
+    g.add_argument("--deps", nargs="*", help="Dependency type to fetch")
+    g.add_argument("--no-deps", dest="deps", action="store_const", const=())
+
+    args = parser.parse_args()
+    update(args)
