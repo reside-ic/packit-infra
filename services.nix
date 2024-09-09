@@ -4,6 +4,11 @@
   services.openssh.enable = true;
   services.postgresql = {
     enable = true;
+    ensureUsers = [{
+      name = "root";
+      ensureClauses.superuser = true;
+      ensureClauses.login = true;
+    }];
     authentication = ''
       local all      all                    trust
       host  all      all     127.0.0.1/32   trust
@@ -29,9 +34,12 @@
       github.team = "priority-pathogens";
     };
 
-    reside.authentication = {
-      method = "github";
-      github.org = "reside-ic";
+    reside = {
+      defaultRoles = [ "ADMIN" ];
+      authentication = {
+        method = "github";
+        github.org = "reside-ic";
+      };
     };
 
     malariaverse-sitefiles = {

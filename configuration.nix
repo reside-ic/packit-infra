@@ -2,6 +2,7 @@
   imports = [
     ./disk-config.nix
     ./services.nix
+    ./tools.nix
     ./modules/multi-packit.nix
     ./modules/outpack.nix
     ./modules/packit-api.nix
@@ -27,27 +28,6 @@
     pkgs.vim
     pkgs.outpack_server
     pkgs.gitMinimal
-
-    (pkgs.writeShellApplication {
-      name = "fetch-secrets";
-      runtimeInputs = [ pkgs.vault ];
-      text = builtins.readFile ./scripts/fetch-secrets.sh;
-    })
-
-    (pkgs.writeShellApplication {
-      name = "grant-role";
-      runtimeInputs = [ pkgs.postgresql ];
-      text = builtins.readFile ./scripts/grant-role.sh;
-    })
-
-    (pkgs.writeShellApplication {
-      name = "create-basic-user";
-      runtimeInputs = [
-        pkgs.postgresql
-        pkgs.apacheHttpd
-      ];
-      text = builtins.readFile ./scripts/create-basic-user.sh;
-    })
   ];
 
   users.users.root.openssh.authorizedKeys.keyFiles = [
