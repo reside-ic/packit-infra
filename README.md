@@ -110,13 +110,13 @@ server.
 ## How do I add a new Packit instance?
 
 Edit `services.nix` by adding a new entry to the `services.multi-packit.instances`
-attribute set. The name of the attribute will determine the URL of the
-instance.
+list.
 
-A GitHub organisation and team needs to be specified. All members of this
-organisation/team will be allowed to access the instance. The team can be
-omitted or left blank, in which case any member of the organisation will have
-access.
+You will need to customize the instance by configuring some of the
+`services.packit-api.<name>` options. A GitHub organisation and team needs to
+be specified. All members of this organisation/team will be allowed to access
+the instance. The team can be omitted or left blank, in which case any member
+of the organisation will have access.
 
 The Packit application on Github manually needs to be granted permission, by
 one of the organisation's admins, to access the organisation. See [the GitHub
