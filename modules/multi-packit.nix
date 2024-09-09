@@ -2,30 +2,13 @@
 let
   inherit (lib) types;
 
-  instanceModule = { name, ... }: {
-    options = {
-      github_org = lib.mkOption {
-        description = "GitHub organisation used for authentication";
-        type = types.str;
-      };
-      github_team = lib.mkOption {
-        description = "GitHub team used for authentication";
-        type = types.str;
-      };
-      ports = {
-        outpack = lib.mkOption { type = types.port; };
-        packit = lib.mkOption { type = types.port; };
-      };
-    };
-  };
-
   cfg = config.services.multi-packit;
-  foreachInstance = f: lib.mkMerge (lib.mapAttrsToList f cfg.instances);
+  foreachInstance = f: lib.mkMerge (lib.map f cfg.instances);
 
   landingPage = pkgs.runCommand "packit-index"
     {
       data = pkgs.writers.writeJSON "values.json" {
-        instances = lib.attrNames cfg.instances;
+        inherit (cfg) instances;
       };
       template = ../index.html.jinja;
       nativeBuildInputs = [ pkgs.jinja2-cli ];
@@ -34,6 +17,14 @@ let
     jinja2 $template $data > $out/index.html
   '';
 
+  # Ports get assigned sequentially, starting at 8000 for outpack and 8080 for
+  # packit-api.
+  ports = lib.listToAttrs (lib.imap0
+    (idx: name: lib.nameValuePair name {
+      outpack = 8000 + idx;
+      packit-api = 8080 + idx;
+    })
+    cfg.instances);
 in
 {
   options.services.multi-packit = {
@@ -41,9 +32,6 @@ in
     domain = lib.mkOption {
       description = "the domain name on which the service is hosted";
       type = types.str;
-    };
-    authenticationMethod = lib.mkOption {
-      type = types.enum [ "basic" "github" ];
     };
     sslCertificate = lib.mkOption {
       type = types.path;
@@ -55,53 +43,65 @@ in
       type = types.path;
     };
     instances = lib.mkOption {
-      type = types.attrsOf (types.submodule instanceModule);
-      default = { };
-    };
-    corsAllowedOrigins = lib.mkOption {
-      type = types.commas;
-      default = "https://${cfg.domain}";
+      type = types.listOf types.str;
+      default = [ ];
     };
   };
 
   config = lib.mkIf cfg.enable {
     services.postgresql = {
-      ensureUsers = foreachInstance (name: instanceCfg: [{
+      ensureUsers = foreachInstance (name: [{
         inherit name;
         ensureDBOwnership = true;
       }]);
 
-      ensureDatabases = foreachInstance (name: instanceCfg: [ name ]);
+      ensureDatabases = foreachInstance (name: [ name ]);
     };
 
-    services.outpack.instances = foreachInstance (name: instanceCfg: {
+    services.outpack.instances = foreachInstance (name: {
       "${name}" = {
-        port = instanceCfg.ports.outpack;
+        port = ports."${name}".outpack;
       };
     });
 
-    services.packit-api.instances = foreachInstance (name: instanceCfg: {
-      "${name}" = {
-        api_root = "https://${cfg.domain}/${name}/packit/api";
-        port = instanceCfg.ports.packit;
-        outpack_server_url = "http://localhost:${toString instanceCfg.ports.outpack}";
+    services.packit-api.instances = foreachInstance (name: {
+      "${name}" = ({ config, ... }: {
+        port = ports."${name}".packit-api;
+        apiRoot = "https://${cfg.domain}/${name}/packit/api";
+        outpackServerUrl = "http://localhost:${toString ports."${name}".outpack}";
         authentication = {
-          method = cfg.authenticationMethod;
           github.redirect_url = "https://${cfg.domain}/${name}/redirect";
-          github.org = instanceCfg.github_org;
-          github.team = instanceCfg.github_team;
         };
+        corsAllowedOrigins = [ "https://${cfg.domain}" ];
         database.url = "jdbc:postgresql://localhost:5432/${name}?stringtype=unspecified";
         database.user = name;
         database.password = name;
         environmentFiles = [
-          "/var/secrets/packit-jwt"
-        ] ++ lib.optionals (cfg.authenticationMethod == "github") [
+          "/var/secrets/packit/${name}/jwt-key"
+        ] ++ lib.optionals (config.authentication.method == "github") [
           cfg.githubOAuthSecret
         ];
-        environment.PACKIT_CORS_ALLOWED_ORIGINS = cfg.corsAllowedOrigins;
+      });
+    });
+
+    systemd.services = foreachInstance (name: {
+      "packit-${name}-jwt-secret" = {
+        wantedBy = [ "packit-api-${name}.service" ];
+        before = [ "packit-api-${name}.service" ];
+
+        serviceConfig.Type = "oneshot";
+
+        script = ''
+          if [[ ! -f /var/secrets/packit/${name}/jwt-key ]]; then
+            mkdir -p /var/secrets/packit/${name}
+            cat > /var/secrets/packit/${name}/jwt-key <<EOF
+          PACKIT_JWT_SECRET=$(${pkgs.openssl}/bin/openssl rand -hex 32)
+          EOF
+          fi
+        '';
       };
     });
+
 
     services.nginx.virtualHosts."${cfg.domain}" = {
       forceSSL = true;
@@ -113,7 +113,7 @@ in
       inherit (cfg) sslCertificate sslCertificateKey;
 
       root = landingPage;
-      locations = foreachInstance (name: instanceCfg: {
+      locations = foreachInstance (name: {
         "= /${name}" = {
           return = "301 /${name}/";
         };
@@ -128,35 +128,19 @@ in
 
         "^~ /${name}/packit/api/" = {
           priority = 999;
-          proxyPass = "http://localhost:${toString instanceCfg.ports.packit}/";
+          proxyPass = "http://localhost:${toString ports."${name}".packit-api}/";
         };
       });
     };
 
-    services.metrics-proxy.endpoints = foreachInstance (name: instanceCfg: {
+    services.metrics-proxy.endpoints = foreachInstance (name: {
       "outpack_server/${name}" = {
-        upstream = "http://localhost:${toString instanceCfg.ports.outpack}/metrics";
+        upstream = "http://localhost:${toString ports."${name}".outpack}/metrics";
         labels = {
           job = "outpack_server";
           project = name;
         };
       };
     });
-
-    systemd.services."generate-jwt-secret" = {
-      wantedBy = foreachInstance (name: _: [ "packit-api-${name}.service" ]);
-      before = foreachInstance (name: _: [ "packit-api-${name}.service" ]);
-
-      serviceConfig.Type = "oneshot";
-
-      script = ''
-        if [[ ! -f /var/secrets/packit-jwt ]]; then
-          mkdir -p /var/secrets
-          cat > /var/secrets/packit-jwt <<EOF
-        PACKIT_JWT_SECRET=$(${pkgs.openssl}/bin/openssl rand -hex 32)
-        EOF
-        fi
-      '';
-    };
   };
 }

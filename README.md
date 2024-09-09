@@ -111,8 +111,7 @@ server.
 
 Edit `services.nix` by adding a new entry to the `services.multi-packit.instances`
 attribute set. The name of the attribute will determine the URL of the
-instance. Choose a new pair of unused port numbers for the outpack server and
-for the packit API server.
+instance.
 
 A GitHub organisation and team needs to be specified. All members of this
 organisation/team will be allowed to access the instance. The team can be

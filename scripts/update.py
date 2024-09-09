@@ -52,7 +52,7 @@ def fetch_latest_commit(owner, repo, branch):
 
 
 def commit_log(owner, repo, base, head):
-    response = github_api("/repos/{owner}/{repo}/compare/{base}...{head}")
+    response = github_api(f"/repos/{owner}/{repo}/compare/{base}...{head}")
     commits = [c["commit"] for c in response["commits"]]
     messages = [c["message"].splitlines()[0] for c in commits]
     return messages

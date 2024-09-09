@@ -5,14 +5,14 @@ let
   instanceModule = { name, ... }: {
     options = {
       enable = lib.mkEnableOption "the Packit API server";
-      api_root = lib.mkOption {
+      apiRoot = lib.mkOption {
         type = types.str;
       };
       port = lib.mkOption {
         default = 8080;
         type = types.port;
       };
-      outpack_server_url = lib.mkOption {
+      outpackServerUrl = lib.mkOption {
         default = "http://localhost:8000";
         type = types.str;
       };
@@ -42,14 +42,20 @@ let
       authentication.github.team = lib.mkOption {
         description = "GitHub team used for authentication";
         type = types.str;
+        default = "";
+      };
+      corsAllowedOrigins = lib.mkOption {
+        type = types.listOf types.str;
+        default = [ ];
+      };
+      defaultRoles = lib.mkOption {
+        description = "Default list of roles assigned to new users";
+        type = types.listOf types.str;
+        default = [ ];
       };
       environmentFiles = lib.mkOption {
         type = types.listOf types.path;
         default = [ ];
-      };
-      environment = lib.mkOption {
-        type = types.attrsOf types.str;
-        default = { };
       };
     };
   };
@@ -80,17 +86,19 @@ in
 
           environment = {
             SERVER_PORT = toString instanceCfg.port;
-            PACKIT_OUTPACK_SERVER_URL = instanceCfg.outpack_server_url;
+            PACKIT_OUTPACK_SERVER_URL = instanceCfg.outpackServerUrl;
             PACKIT_DB_URL = instanceCfg.database.url;
             PACKIT_DB_USER = instanceCfg.database.user;
             PACKIT_DB_PASSWORD = instanceCfg.database.password;
-            PACKIT_API_ROOT = instanceCfg.api_root;
+            PACKIT_API_ROOT = instanceCfg.apiRoot;
+            PACKIT_DEFAULT_ROLES = lib.concatStringsSep "," instanceCfg.defaultRoles;
+            PACKIT_CORS_ALLOWED_ORIGINS = lib.concatStringsSep "," instanceCfg.corsAllowedOrigins;
             PACKIT_AUTH_METHOD = instanceCfg.authentication.method;
           } // (lib.optionalAttrs (instanceCfg.authentication.method == "github") {
             PACKIT_AUTH_REDIRECT_URL = instanceCfg.authentication.github.redirect_url;
             PACKIT_AUTH_GITHUB_ORG = instanceCfg.authentication.github.org;
             PACKIT_AUTH_GITHUB_TEAM = instanceCfg.authentication.github.team;
-          }) // instanceCfg.environment;
+          });
         };
       })
       cfg.instances);

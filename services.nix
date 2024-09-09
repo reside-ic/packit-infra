@@ -14,38 +14,32 @@
   services.multi-packit = {
     enable = true;
     domain = "packit.dide.ic.ac.uk";
-    authenticationMethod = "github";
 
     sslCertificate = "/var/secrets/packit.cert";
     sslCertificateKey = "/var/secrets/packit.key";
     githubOAuthSecret = "/var/secrets/github-oauth";
 
-    instances = {
-      priority-pathogens = {
-        github_org = "mrc-ide";
-        github_team = "priority-pathogens";
-        ports = {
-          outpack = 8000;
-          packit = 8080;
-        };
-      };
+    instances = [ "priority-pathogens" "reside" "malariaverse-sitefiles" ];
+  };
 
-      reside = {
-        github_org = "reside-ic";
-        github_team = "everyone";
-        ports = {
-          outpack = 8001;
-          packit = 8081;
-        };
-      };
+  services.packit-api.instances = {
+    priority-pathogens.authentication = {
+      method = "github";
+      github.org = "mrc-ide";
+      github.team = "priority-pathogens";
+    };
 
-      malariaverse-sitefiles = {
-        github_org = "malariaverse";
-        github_team = "";
-        ports = {
-          outpack = 8002;
-          packit = 8082;
-        };
+    reside.authentication = {
+      method = "github";
+      github.org = "reside-ic";
+    };
+
+    malariaverse-sitefiles = {
+      defaultRoles = [ "USER" ];
+      authentication = {
+        method = "github";
+        github.org = "malariaverse";
+        github.team = "sitefiles";
       };
     };
   };

@@ -11,9 +11,16 @@
 
   services.multi-packit = {
     domain = lib.mkForce "localhost";
-    authenticationMethod = lib.mkForce "basic";
-    corsAllowedOrigins = lib.mkForce "https://localhost:8443";
   };
+
+  services.packit-api.instances =
+    let
+      f = name: lib.nameValuePair name {
+        authentication.method = lib.mkForce "basic";
+        corsAllowedOrigins = lib.mkForce [ "https://localhost:8443" ];
+      };
+    in
+    lib.listToAttrs (map f config.services.multi-packit.instances);
 
   systemd.services."generate-secrets" = {
     wantedBy = [
