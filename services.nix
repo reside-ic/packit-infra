@@ -1,4 +1,4 @@
-{ pkgs, config, lib, ... }:
+{ pkgs, config, lib, inputs, ... }:
 {
   services.nginx.enable = true;
   services.openssh.enable = true;
@@ -76,10 +76,19 @@
   };
 
   services.prometheus.exporters = {
-    node = {
-      enable = true;
-      enabledCollectors = [ "systemd" ];
-      port = 9001;
-    };
+    node =
+      let
+        inherit (inputs) self;
+        rev = self.rev or self.dirtyRev or "unknown";
+        staticMetrics = pkgs.writeTextDir "static-metrics.prom" ''
+          nixos_configuration_info{revision="${rev}", flake_hash="${self.narHash}"} 1
+        '';
+      in
+      {
+        enable = true;
+        enabledCollectors = [ "systemd" "textfile" ];
+        extraFlags = [ "--collector.textfile.directory=${staticMetrics}" ];
+        port = 9001;
+      };
   };
 }
