@@ -1,7 +1,21 @@
-{ pkgs, config, ... }:
+{ pkgs, config, lib, ... }:
 {
   services.nginx.enable = true;
   services.openssh.enable = true;
+  services.openssh.settings.HostKeyAlgorithms = lib.concatStringsSep "," [
+    "rsa-sha2-512"
+    "rsa-sha2-256"
+    "ssh-ed25519"
+    "ssh-rsa" # For ICT
+  ];
+  services.openssh.settings.Macs = [
+    "hmac-sha2-512-etm@openssh.com"
+    "hmac-sha2-256-etm@openssh.com"
+    "umac-128-etm@openssh.com"
+    "hmac-sha2-256" # For ICT
+    "hmac-sha2-512" # For ICT
+  ];
+
   services.postgresql = {
     enable = true;
     ensureUsers = [{
