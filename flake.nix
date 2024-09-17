@@ -51,7 +51,7 @@
             runtimeInputs = [ pkgs.nixos-rebuild ];
             text = ''
               nixos-rebuild switch \
-                --flake ${self}#wpia-packit \
+                --flake .#wpia-packit \
                 --target-host root@packit.dide.ic.ac.uk \
                 --use-substitutes
             '';
