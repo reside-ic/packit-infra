@@ -38,7 +38,7 @@
     sslCertificateKey = "/var/secrets/packit.key";
     githubOAuthSecret = "/var/secrets/github-oauth";
 
-    instances = [ "priority-pathogens" "reside" "malariaverse-sitefiles" ];
+    instances = [ "priority-pathogens" "reside" "malariaverse-sitefiles" "kipling" ];
   };
 
   services.packit-api.instances = {
@@ -53,6 +53,15 @@
       authentication = {
         method = "github";
         github.org = "reside-ic";
+      };
+    };
+
+    kipling = {
+      defaultRoles = [ "ADMIN" ];
+      authentication = {
+        method = "github";
+        github.org = "mrc-ide";
+        github.team = "kipling";
       };
     };
 
