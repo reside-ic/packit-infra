@@ -2,16 +2,11 @@
 
 ## Preliminaries
 
-You need Nix installed on your local dev machine, with flakes enabled. If you
-don't have Nix installed, you can use SSH onto the server and use it to run the
-commands. Obviously this doesn't work for initial provisioning.
+You need Nix installed on your local machine. You can use the
+[DeterminateSystems installer](https://github.com/DeterminateSystems/nix-installer) for this:
 
-TODO: maybe create some users on the server so we don't have to operate as root
-for everything.
-
-You can enable flakes by creating a `~/.config/nix/nix.conf` file:
-```
-experimental-features = nix-command flakes
+```sh
+curl --proto '=https' --tlsv1.2 -sSf -L https://install.determinate.systems/nix | sh -s -- install
 ```
 
 ## How do I deploy to the server?
@@ -70,28 +65,48 @@ nix run .#start-vm
 This starts a local VM running in QEMU. Handy to check everything works as
 expected before deploying.
 
-It will forward port 443 of the VM onto port 8443, meaning you may visit
-https://localhost:8443/ once the VM has started.
+When starting, this command will obtain a Vault token and inject it into the VM
+to be used for fetch GitHub client ID and secrets. If needed, you may be
+prompted for your GitHub personal access token.
 
-Nginx is configured using a self-signed certificate, which will cause some
-browser warnings.
+Port 443 of the VM is exposed as port 8443, meaning you may visit
+https://localhost:8443/ once the VM has started. nginx is configured using a
+self-signed certificate, which will cause some browser warnings.
 
-Packit is configured to use basic authentication, but no users exist by default.
-In the VM console, run the following:
+Packit is configured to use GitHub authentication. If needed, after logging in,
+you may grant yourself more permissions on a particular Packit instance through
+the VM console.
 
 ```
-create-basic-user <instance> "admin@localhost.com" password
-grant-role <instance> "admin@localhost.com" ADMIN
+grant-role <instance> <github username> ADMIN
 ```
 
 ## How do I run the integration tests?
 
 ```sh
-nix flake check
+nix flake check -L
 ```
 
-This doesn't test that much yet, just that the Packit API eventually comes up.
-We should at least try to interact with the API a little.
+Depending on your host system and how Nix was installed on it, this may fail
+with a "qemu-kvm: failed to initialize kvm: Permission denied" error. This
+typically means that `/dev/kvm` and is not writable by the Nix build users.
+
+This can be fixed by changing the devices ACLs to make it writable by all
+members of the nixbld group:
+
+```sh
+sudo setfacl -m g:nixbld:rw /dev/kvm
+```
+
+The above command will probably not persist across reboots. For that to work,
+create a udev rule using the following commands:
+
+```sh
+sudo tee /etc/udev/rules.d/50-nixbld-kvm.rules <<EOF
+KERNEL=="kvm", RUN+="/bin/setfacl -m g:nixbld:rw $env{DEVNAME}"
+EOF
+sudo udevadm control --reload-rules && sudo udevadm trigger
+```
 
 ## How do I add new SSH keys?
 

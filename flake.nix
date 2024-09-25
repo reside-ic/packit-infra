@@ -9,6 +9,7 @@
         overlays = [ self.overlays.default ];
         config.allowUnfreePredicate = pkg: builtins.elem (nixpkgs.lib.getName pkg) [
           "vault"
+          "vault-bin"
         ];
       };
     in
@@ -29,22 +30,12 @@
         ];
       };
 
-      nixosConfigurations.vm = nixpkgs.lib.nixosSystem {
-        system = "x86_64-linux";
-        specialArgs = { inherit inputs; };
-        modules = [
-          ./configuration.nix
-          ./tests/setup.nix
-          { nixpkgs = pkgsArgs; }
-        ];
-      };
-
       packages.x86_64-linux =
         let pkgs = import nixpkgs ({ system = "x86_64-linux"; } // pkgsArgs);
         in {
           inherit (pkgs) outpack_server packit-app packit-api packit;
 
-          default = self.nixosConfigurations."wpia-packit".config.system.build.toplevel;
+          default = self.nixosConfigurations.wpia-packit.config.system.build.toplevel;
 
           deploy = pkgs.writeShellApplication {
             name = "deploy-wpia-packit";
@@ -79,12 +70,28 @@
           };
 
           update = pkgs.writers.writePython3Bin "update" { } ./scripts/update.py;
-          start-vm = self.nixosConfigurations."vm".config.system.build.vm;
+
+          start-vm = pkgs.writeShellApplication {
+            name = "start-vm";
+            runtimeInputs = [ pkgs.vault-bin ];
+            text = ''
+              export VAULT_ADDR=https://vault.dide.ic.ac.uk:8200
+              VAULT_TOKEN=$(vault print token)
+              if [[ -z $VAULT_TOKEN ]]; then
+                echo "Logging in to $VAULT_ADDR"
+                VAULT_TOKEN=$(vault login -method=github -field=token)
+              fi
+
+              exec ${nixpkgs.lib.getExe self.nixosConfigurations.wpia-packit.config.system.build.vm} \
+                -fw_cfg name=opt/vault-token,string="$VAULT_TOKEN" "$@"
+            '';
+
+          };
         };
 
-      checks.x86_64-linux.boots =
+      checks.x86_64-linux.default =
         let pkgs = import nixpkgs ({ system = "x86_64-linux"; } // pkgsArgs);
-        in pkgs.callPackage ./tests/boot.nix { inherit inputs; };
+        in pkgs.callPackage ./tests { inherit inputs; };
 
       devShells.x86_64-linux.default =
         let pkgs = import nixpkgs ({ system = "x86_64-linux"; } // pkgsArgs);

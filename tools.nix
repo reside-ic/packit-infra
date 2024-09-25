@@ -2,7 +2,7 @@
 let
   fetch-secrets = pkgs.writeShellApplication {
     name = "fetch-secrets";
-    runtimeInputs = [ pkgs.vault ];
+    runtimeInputs = [ pkgs.vault-bin ];
     text = builtins.readFile ./scripts/fetch-secrets.sh;
   };
 
