@@ -8,8 +8,8 @@ pkgs.testers.runNixOSTest {
     imports = [
       ../configuration.nix
 
-      # The `virtualisation.vmVariant` setting we to import VM-specific settings
-      # doesn't for the test VMs.
+      # The `virtualisation.vmVariant` setting we use to import VM-specific
+      # settings doesn't work for the test VMs, so re-import the vm module here.
       # https://github.com/NixOS/nixpkgs/pull/339511#issuecomment-2328611982
       ../vm.nix
     ];
