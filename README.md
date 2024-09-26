@@ -91,7 +91,7 @@ Depending on your host system and how Nix was installed on it, this may fail
 with a "qemu-kvm: failed to initialize kvm: Permission denied" error. This
 typically means that `/dev/kvm` and is not writable by the Nix build users.
 
-This can be fixed by changing the devices ACLs to make it writable by all
+This can be fixed by changing the devices ACLs (Access Control Lists) to make it writable by all
 members of the nixbld group:
 
 ```sh
