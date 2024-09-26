@@ -12,6 +12,10 @@ let
         default = 8080;
         type = types.port;
       };
+      management-port = lib.mkOption {
+        default = 8081;
+        type = types.port;
+      };
       outpackServerUrl = lib.mkOption {
         default = "http://localhost:8000";
         type = types.str;
@@ -86,6 +90,7 @@ in
 
           environment = {
             SERVER_PORT = toString instanceCfg.port;
+            PACKIT_MANAGEMENT_PORT = toString instanceCfg.management-port;
             PACKIT_OUTPACK_SERVER_URL = instanceCfg.outpackServerUrl;
             PACKIT_DB_URL = instanceCfg.database.url;
             PACKIT_DB_USER = instanceCfg.database.user;

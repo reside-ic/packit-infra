@@ -12,6 +12,7 @@
     domain = lib.mkForce "localhost:8443";
   };
 
+  networking.hostName = lib.mkForce "wpia-packit-vm";
   users.motd = ''
     Use the 'Ctrl-A x' sequence or the `shutdown now` command to terminate the VM session.
   '';

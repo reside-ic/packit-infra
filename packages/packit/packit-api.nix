@@ -10,9 +10,20 @@
 # dependencies without performing a full build. Therefore that's what we do: we
 # build the package once, throw away the result but keep the dependency cache.
 # The package is built a second time, using the same dependency cache.
-{ fetchFromGitHub, stdenv, gradle, jre_headless, lib, perl, runtimeShell, writeText, makeWrapper }:
+{ fetchFromGitHub, stdenv, gradle, jre_headless, lib, perl, runtimeShell, writeTextDir, writeText, makeWrapper }:
 let
   sources = lib.importJSON ./sources.json;
+  gitProperties = writeTextDir "git.properties" ''
+    git.commit.id = ${sources.src.rev}
+  '';
+
+  replaceGitProperties = writeText "skip-git-properties.gradle" ''
+    gradle.projectsEvaluated {
+      def project = getRootProject().findProject(":app")
+      project.gitProperties.failOnNoGitDirectory = false
+      project.sourceSets.main.resources.srcDir "${gitProperties}"
+    }
+  '';
 
   makePackage = args@{ nativeBuildInputs ? [ ], ... }: stdenv.mkDerivation (finalAttrs: {
     src = fetchFromGitHub sources.src;
@@ -23,7 +34,9 @@ let
       runHook preBuild
 
       export GRADLE_USER_HOME=$(mktemp -d)
-      gradle --no-daemon --console=plain --info $gradleFlags :app:bootJar
+      gradle --no-daemon --console=plain --info \
+        -I ${replaceGitProperties} $gradleFlags \
+        :app:bootJar
 
       runHook postBuild
     '';
