@@ -61,12 +61,14 @@ in
 
     services.outpack.instances = foreachInstance (name: {
       "${name}" = {
+        enable = true;
         port = ports."${name}".outpack;
       };
     });
 
     services.packit-api.instances = foreachInstance (name: {
       "${name}" = ({ config, ... }: {
+        enable = true;
         port = ports."${name}".packit-api;
         management-port = ports."${name}".packit-api-management;
 
@@ -74,6 +76,7 @@ in
         outpackServerUrl = "http://localhost:${toString ports."${name}".outpack}";
         authentication = {
           github.redirect_url = "https://${cfg.domain}/${name}/redirect";
+          service.audience = "https://${cfg.domain}/${name}";
         };
         corsAllowedOrigins = [ "https://${cfg.domain}" ];
         database.url = "jdbc:postgresql://localhost:5432/${name}?stringtype=unspecified";
