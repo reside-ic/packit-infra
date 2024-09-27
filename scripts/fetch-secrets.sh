@@ -1,8 +1,7 @@
 #!/usr/bin/env bash
 set -eu
 
-VAULT_ADDR=https://vault.dide.ic.ac.uk:8200
-export VAULT_ADDR
+export VAULT_ADDR="https://vault.dide.ic.ac.uk:8200"
 
 VAULT_TOKEN=$(vault login -method=github -token-only)
 export VAULT_TOKEN
