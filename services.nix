@@ -66,13 +66,10 @@
 
         service = {
           enable = true;
-
-          # This policy is only here temporarily, while I iterate on a reusable
-          # Github action.
           policies = [{
             issuer = "https://token.actions.githubusercontent.com";
             jwkSetUri = "https://token.actions.githubusercontent.com/.well-known/jwks";
-            requiredClaims.repository = "plietar/orderly-ci-test";
+            requiredClaims.repository = "mrc-ide/orderly-action";
             grantedPermissions = [ "outpack.read" "outpack.write" ];
           }];
         };
