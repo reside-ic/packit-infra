@@ -43,12 +43,9 @@ def github_api(path):
     return json.load(urlopen(request))
 
 
-def fetch_latest_commit(owner, repo, branch):
-    if branch is None:
-        branch = github_api(f"/repos/{owner}/{repo}")["default_branch"]
-
-    response = github_api(f"/repos/{owner}/{repo}/git/ref/heads/{branch}")
-    return response["object"]["sha"]
+def resolve_git_ref(owner, repo, ref):
+    response = github_api(f"/repos/{owner}/{repo}/commits/{ref}")
+    return response["sha"]
 
 
 def commit_log(owner, repo, base, head):
@@ -167,7 +164,7 @@ def update(args):
     if args.output is None:
         args.output = os.path.join("packages", args.name, "sources.json")
 
-    rev = fetch_latest_commit(args.owner, args.repo, args.branch)
+    rev = resolve_git_ref(args.owner, args.repo, args.ref)
 
     if metadata["rev"] == rev:
         print(f"{args.name} is already up-to-date at {rev}")
@@ -206,8 +203,9 @@ if __name__ == "__main__":
     parser.add_argument("--owner", help="Owner of source repository.")
     parser.add_argument("--repo", help="Name of source repository.")
     parser.add_argument(
-        "--branch", help="Branch of the source repository to use."
-    )
+        "--ref",
+        help="Git reference (branch name, tag or commit hash)",
+        default="HEAD")
     parser.add_argument("--output", help="File in which to write the result.")
     parser.add_argument(
         "--force",

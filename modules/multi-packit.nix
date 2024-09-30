@@ -17,12 +17,13 @@ let
     jinja2 $template $data > $out/index.html
   '';
 
-  # Ports get assigned sequentially, starting at 8000 for outpack and 8080 for
-  # packit-api.
+  # Ports get assigned sequentially, starting at 8000 for outpack, 8080 for
+  # packit-api, and 8160 for packit-api's management interface.
   ports = lib.listToAttrs (lib.imap0
     (idx: name: lib.nameValuePair name {
       outpack = 8000 + idx;
       packit-api = 8080 + idx;
+      packit-api-management = 8160 + idx;
     })
     cfg.instances);
 in
@@ -67,6 +68,8 @@ in
     services.packit-api.instances = foreachInstance (name: {
       "${name}" = ({ config, ... }: {
         port = ports."${name}".packit-api;
+        management-port = ports."${name}".packit-api-management;
+
         apiRoot = "https://${cfg.domain}/${name}/packit/api";
         outpackServerUrl = "http://localhost:${toString ports."${name}".outpack}";
         authentication = {
@@ -134,6 +137,13 @@ in
     };
 
     services.metrics-proxy.endpoints = foreachInstance (name: {
+      "packit-api/${name}" = {
+        upstream = "http://localhost:${toString ports."${name}".packit-api-management}/prometheus";
+        labels = {
+          job = "packit-api";
+          project = name;
+        };
+      };
       "outpack_server/${name}" = {
         upstream = "http://localhost:${toString ports."${name}".outpack}/metrics";
         labels = {
