@@ -47,15 +47,12 @@
       github.org = "mrc-ide";
       github.team = "priority-pathogens";
 
-      service = {
-        enable = true;
-        policies = [{
-          issuer = "https://token.actions.githubusercontent.com";
-          jwkSetUri = "https://token.actions.githubusercontent.com/.well-known/jwks";
-          requiredClaims.repository = "mrc-ide/priority-pathogens";
-          grantedPermissions = [ "outpack.read" "outpack.write" ];
-        }];
-      };
+      service.policies = [{
+        issuer = "https://token.actions.githubusercontent.com";
+        jwkSetUri = "https://token.actions.githubusercontent.com/.well-known/jwks";
+        requiredClaims.repository = "mrc-ide/priority-pathogens";
+        grantedPermissions = [ "outpack.read" "outpack.write" ];
+      }];
     };
 
     reside = {
@@ -64,15 +61,12 @@
         method = "github";
         github.org = "reside-ic";
 
-        service = {
-          enable = true;
-          policies = [{
-            issuer = "https://token.actions.githubusercontent.com";
-            jwkSetUri = "https://token.actions.githubusercontent.com/.well-known/jwks";
-            requiredClaims.repository = "mrc-ide/orderly-action";
-            grantedPermissions = [ "outpack.read" "outpack.write" ];
-          }];
-        };
+        service.policies = [{
+          issuer = "https://token.actions.githubusercontent.com";
+          jwkSetUri = "https://token.actions.githubusercontent.com/.well-known/jwks";
+          requiredClaims.repository = "mrc-ide/orderly-action";
+          grantedPermissions = [ "outpack.read" "outpack.write" ];
+        }];
       };
     };
 

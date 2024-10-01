@@ -98,12 +98,9 @@ let
           };
         };
         service = {
-          enable = lib.mkOption {
-            type = types.bool;
-            default = false;
-          };
           audience = lib.mkOption {
-            type = types.str;
+            type = types.nullOr types.str;
+            default = null;
           };
           policies = lib.mkOption {
             type = types.listOf (lib.types.submodule policyModule);
@@ -138,8 +135,7 @@ let
       # The authentication.service configuration option is mapped straight onto properties.
       # Eventually, most / all of the configuration could be managed with this, instead of
       # using environment variables.
-      properties.auth.service =
-        lib.mkIf config.authentication.service.enable (builtins.removeAttrs config.authentication.service [ "enable" ]);
+      properties.auth.service = config.authentication.service;
     };
   };
 

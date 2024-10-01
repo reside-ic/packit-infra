@@ -20,14 +20,11 @@ pkgs.testers.runNixOSTest {
     services.packit-api.instances.reside = {
       authentication = lib.mkForce {
         method = "basic";
-        service = {
-          enable = true;
-          policies = [{
-            jwkSetUri = "http://127.0.0.1:81/jwks.json";
-            issuer = "https://token.actions.githubusercontent.com";
-            grantedPermissions = [ "outpack.read" "outpack.write" ];
-          }];
-        };
+        service.policies = [{
+          jwkSetUri = "http://127.0.0.1:81/jwks.json";
+          issuer = "https://token.actions.githubusercontent.com";
+          grantedPermissions = [ "outpack.read" "outpack.write" ];
+        }];
       };
     };
 

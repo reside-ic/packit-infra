@@ -76,7 +76,7 @@ in
         outpackServerUrl = "http://localhost:${toString ports."${name}".outpack}";
         authentication = {
           github.redirect_url = "https://${cfg.domain}/${name}/redirect";
-          service.audience = "https://${cfg.domain}/${name}";
+          service.audience = lib.mkIf (builtins.length config.authentication.service.policies > 0) "https://${cfg.domain}/${name}";
         };
         corsAllowedOrigins = [ "https://${cfg.domain}" ];
         database.url = "jdbc:postgresql://localhost:5432/${name}?stringtype=unspecified";
