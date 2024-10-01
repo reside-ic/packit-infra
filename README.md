@@ -84,6 +84,14 @@ grant-role <instance> <github username> ADMIN
 ## How do I run the integration tests?
 
 ```sh
+nix run .#vm-test
+nix run .#vm-test -- --interactive
+```
+
+The second command starts a Python session which may be used to interact with the test machine.
+
+The full checks can be run using the following command:
+```sh
 nix flake check -L
 ```
 

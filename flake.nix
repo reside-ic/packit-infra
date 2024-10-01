@@ -85,8 +85,9 @@
               exec ${nixpkgs.lib.getExe self.nixosConfigurations.wpia-packit.config.system.build.vm} \
                 -fw_cfg name=opt/vault-token,string="$VAULT_TOKEN" "$@"
             '';
-
           };
+
+          vm-test = self.checks.x86_64-linux.default.driver;
         };
 
       checks.x86_64-linux.default =

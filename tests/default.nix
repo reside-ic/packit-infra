@@ -14,13 +14,32 @@ pkgs.testers.runNixOSTest {
       ../vm.nix
     ];
 
-    services.packit-api.instances =
-      let
-        f = name: lib.nameValuePair name {
-          authentication.method = lib.mkForce "basic";
-        };
-      in
-      lib.listToAttrs (map f config.services.multi-packit.instances);
+    # Having all the instances running slows down tests. Having just one
+    # instance is good enough.
+    services.multi-packit.instances = lib.mkForce [ "reside" ];
+    services.packit-api.instances.reside = {
+      authentication = lib.mkForce {
+        method = "basic";
+        service.policies = [{
+          jwkSetUri = "http://127.0.0.1:81/jwks.json";
+          issuer = "https://token.actions.githubusercontent.com";
+          grantedPermissions = [ "outpack.read" "outpack.write" ];
+        }];
+      };
+    };
+
+    # This sets up an additional HTTP service on port 81 to serve JWK keys.
+    # The server supports GET and PUT, allowing the test script to upload its own keys
+    systemd.tmpfiles.rules = [ "d /var/www 755 nginx nginx" ];
+    systemd.services.nginx.serviceConfig.ReadWritePaths = [ "/var/www" ];
+    services.nginx.virtualHosts.jwk = {
+      serverName = "localhost";
+      listen = [{ addr = "0.0.0.0"; port = 81; ssl = false; }];
+      root = "/var/www";
+      extraConfig = ''
+        dav_methods PUT;
+      '';
+    };
 
     # It's suprisingly easy to run qemu without hardware acceleration and not
     # notice it, which makes the VM so slow the tests tend to fail. This forces
@@ -28,5 +47,6 @@ pkgs.testers.runNixOSTest {
     virtualisation.qemu.options = [ "-machine" "accel=kvm" ];
   };
 
+  extraPythonPackages = ps: [ ps.jwcrypto ];
   testScript = builtins.readFile ./script.py;
 }
