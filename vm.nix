@@ -12,19 +12,23 @@
     domain = lib.mkForce "localhost:8443";
   };
 
+  vault.secrets = lib.mkForce [{
+    key = "packit/githubauth/auth/githubclient";
+    path = "/var/secrets/github-oauth";
+    fields.PACKIT_GITHUB_CLIENT_ID = "id";
+    fields.PACKIT_GITHUB_CLIENT_SECRET = "secret";
+    format = "env";
+  }];
+
   networking.hostName = lib.mkForce "wpia-packit-vm";
   users.motd = ''
+    Server is available at https://${config.services.multi-packit.domain}.
     Use the 'Ctrl-A x' sequence or the `shutdown now` command to terminate the VM session.
   '';
 
   systemd.services."generate-secrets" =
     let
       packit-units = map (name: "packit-api-${name}.service") config.services.multi-packit.instances;
-      fetch-vm-secrets = pkgs.writeShellApplication {
-        name = "fetch-vm-secrets";
-        runtimeInputs = [ pkgs.vault-bin ];
-        text = builtins.readFile ./scripts/fetch-vm-secrets.sh;
-      };
     in
     {
       wants = [ "network-online.target" ];
@@ -47,7 +51,7 @@
         fi
 
         if [[ -f /sys/firmware/qemu_fw_cfg/by_name/opt/vault-token/raw ]]; then
-          ${fetch-vm-secrets}/bin/fetch-vm-secrets
+          ${lib.getExe config.vault.tool} --token-file /sys/firmware/qemu_fw_cfg/by_name/opt/vault-token/raw
         fi
       '';
     };

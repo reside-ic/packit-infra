@@ -1,11 +1,5 @@
 { pkgs, ... }:
 let
-  fetch-secrets = pkgs.writeShellApplication {
-    name = "fetch-secrets";
-    runtimeInputs = [ pkgs.vault-bin ];
-    text = builtins.readFile ./scripts/fetch-secrets.sh;
-  };
-
   grant-role = pkgs.writeShellApplication {
     name = "grant-role";
     runtimeInputs = [ pkgs.postgresql ];
@@ -29,7 +23,6 @@ let
 in
 {
   environment.systemPackages = [
-    fetch-secrets
     grant-role
     create-basic-user
     flyway-packit

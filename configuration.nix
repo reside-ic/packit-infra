@@ -4,6 +4,7 @@
     ./services.nix
     ./tools.nix
     ./modules/multi-packit.nix
+    ./modules/vault.nix
     ./modules/outpack.nix
     ./modules/packit-api.nix
     ./modules/metrics-proxy.nix

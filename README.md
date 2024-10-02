@@ -159,6 +159,34 @@ The initial user needs to be granted the ADMIN role manually.
 
 Afterwards permissions may be managed through the web UI.
 
+## How do I add secrets to a machine?
+
+All secrets are fetched from Vault. To add a new secret to a machine, add it
+to the Vault and add an entry to the `vault.secrets` option.
+
+```nix
+vault.secrets = [{
+    key = "name/of/secret";
+    path = "/var/secret/mysecret";
+}];
+```
+
+After deploying the configuration to the machine, SSH onto it and run the
+`fetch-secrets` command to pull all the secrets. You will be prompted for your
+GitHub personal access token in order to authenticate against Vault.  The
+token is only used for the duration of this script. Neither your GitHub PAT
+nor the Vault token that is obtained is persisted on the server.
+
+To debug the secrets configuration, you can also run the command locally by
+running:
+
+```sh
+nix run .#nixosConfigurations.<hostname>.config.vault.tool -- --root here
+```
+
+This will fetch all the secrets as the command on the server would have done,
+but store them relative to the `here` folder.
+
 ## How do I update NixOS?
 
 ```

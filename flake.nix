@@ -19,6 +19,10 @@
         outpack_server = final.callPackage ./packages/outpack_server { };
         packit-app = final.callPackage ./packages/packit/packit-app.nix { };
         packit-api = final.callPackage ./packages/packit/packit-api.nix { };
+        fetch-secrets = final.writers.writePython3Bin "fetch-secrets"
+          {
+            libraries = [ final.python3.pkgs.hvac ];
+          } ./scripts/fetch-secrets.py;
       });
 
       nixosConfigurations.wpia-packit = nixpkgs.lib.nixosSystem {
@@ -33,7 +37,7 @@
       packages.x86_64-linux =
         let pkgs = import nixpkgs ({ system = "x86_64-linux"; } // pkgsArgs);
         in {
-          inherit (pkgs) outpack_server packit-app packit-api packit;
+          inherit (pkgs) outpack_server packit-app packit-api packit fetch-secrets;
 
           default = self.nixosConfigurations.wpia-packit.config.system.build.toplevel;
 
@@ -74,17 +78,18 @@
           start-vm = pkgs.writeShellApplication {
             name = "start-vm";
             runtimeInputs = [ pkgs.vault-bin ];
-            text = ''
-              export VAULT_ADDR=https://vault.dide.ic.ac.uk:8200
-              VAULT_TOKEN=$(vault print token)
-              if [[ -z $VAULT_TOKEN ]]; then
-                echo "Logging in to $VAULT_ADDR"
-                VAULT_TOKEN=$(vault login -method=github -field=token)
-              fi
+            text =
+              let vaultUrl = self.nixosConfigurations.wpia-packit.config.vault.url;
+              in ''
+                token=$(vault print token)
+                if [[ -z $token ]]; then
+                  echo "Logging in to ${vaultUrl}"
+                  token=$(env VAULT_ADDR="${vaultUrl}" vault login -method=github -field=token)
+                fi
 
-              exec ${nixpkgs.lib.getExe self.nixosConfigurations.wpia-packit.config.system.build.vm} \
-                -fw_cfg name=opt/vault-token,string="$VAULT_TOKEN" "$@"
-            '';
+                exec ${nixpkgs.lib.getExe self.nixosConfigurations.wpia-packit.config.system.build.vm} \
+                  -fw_cfg name=opt/vault-token,string="$token" "$@"
+              '';
           };
 
           vm-test = self.checks.x86_64-linux.default.driver;
