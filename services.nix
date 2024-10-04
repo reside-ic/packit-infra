@@ -30,6 +30,24 @@
     '';
   };
 
+  vault.secrets = [
+    {
+      key = "packit/ssl/production/cert";
+      path = "/var/secrets/packit.cert";
+    }
+    {
+      key = "packit/ssl/production/key";
+      path = "/var/secrets/packit.key";
+    }
+    {
+      key = "packit/oauth/production";
+      path = "/var/secrets/github-oauth";
+      fields.PACKIT_GITHUB_CLIENT_ID = "clientId";
+      fields.PACKIT_GITHUB_CLIENT_SECRET = "clientSecret";
+      format = "env";
+    }
+  ];
+
   services.multi-packit = {
     enable = true;
     domain = "packit.dide.ic.ac.uk";
