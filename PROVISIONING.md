@@ -17,8 +17,7 @@ process is automated thanks to the [nixos-anywhere][nixos-anywhere] tool.
 The instructions below use `<hostname>` and `<fqdn>` as placeholders.
 `<hostname>` should be the target machine's short hostname, eg. `wpia-packit`,
 whereas `<fqdn>` is the full DNS name for the machine, eg.
-`packit.dide.ic.ac.ukpackit`, whereas `<fqdn>` is the full DNS name for the
-machine, eg. `packit.dide.ic.ac.uk`.
+`packit.dide.ic.ac.uk.
 
 ## Hardware configuration
 
