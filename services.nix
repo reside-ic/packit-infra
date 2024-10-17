@@ -56,7 +56,13 @@
     sslCertificateKey = "/var/secrets/packit.key";
     githubOAuthSecret = "/var/secrets/github-oauth";
 
-    instances = [ "priority-pathogens" "reside" "malariaverse-sitefiles" "kipling" ];
+    instances = [
+      "priority-pathogens"
+      "reside"
+      "malariaverse-sitefiles"
+      "kipling"
+      "training"
+    ];
   };
 
   services.packit-api.instances = {
@@ -104,6 +110,14 @@
         github.org = "malariaverse";
         github.team = "sitefiles";
       };
+    };
+
+    training = {
+      authentication = {
+        method = "github";
+        github.org = "mrc-ide";
+      };
+      defaultRoles = [ "USER" ];
     };
   };
 
