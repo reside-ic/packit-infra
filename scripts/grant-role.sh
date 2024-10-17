@@ -10,7 +10,7 @@ INSTANCE=$1
 USERNAME=$2
 ROLE=$3
 
-psql -U "$INSTANCE" -d "$INSTANCE" \
+psql -d "$INSTANCE" \
   -v "username=$USERNAME" \
   -v "role=$ROLE" <<EOF
 INSERT INTO user_role (user_id, role_id)
