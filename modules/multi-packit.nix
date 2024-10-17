@@ -1,4 +1,4 @@
-{ pkgs, config, lib, ... }:
+{ self', pkgs, config, lib, ... }:
 let
   inherit (lib) types;
 
@@ -125,7 +125,7 @@ in
         };
 
         "~ ^/${name}(?<path>/.*)$" = {
-          root = pkgs.packit-app.override {
+          root = self'.packages.packit-app.override {
             PUBLIC_URL = "/${name}";
             PACKIT_NAMESPACE = name;
           };

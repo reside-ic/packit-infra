@@ -1,4 +1,4 @@
-{ pkgs, lib, config, ... }:
+{ pkgs, self', lib, config, ... }:
 let
   secretModule = {
     options = {
@@ -73,7 +73,7 @@ in
             meta.mainProgram = "fetch-secrets";
           } ''
           mkdir -p $out/bin
-          makeWrapper ${lib.getExe pkgs.fetch-secrets} $out/bin/fetch-secrets \
+          makeWrapper ${lib.getExe self'.packages.fetch-secrets} $out/bin/fetch-secrets \
             --add-flags --url --add-flags "${config.vault.url}" \
             --add-flags --spec --add-flags "${config.vault.spec}"
         '';
