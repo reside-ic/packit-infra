@@ -11,5 +11,11 @@ jobs:
       - uses: actions/checkout@v4
       - uses: DeterminateSystems/nix-installer-action@main
       - uses: DeterminateSystems/magic-nix-cache-action@main
-      - run: nix build -L
+      - run: |
+          hostnames=$(nix eval --raw ".#nixosConfigurations" --apply 'x: builtins.concatStringsSep " " (builtins.attrNames x)')
+          for h in $hostnames; do
+            attribute="nixosConfigurations.$h.config.system.build.toplevel"
+            nix build -L .#$attribute --no-link
+          done
+
       - run: nix flake check -L

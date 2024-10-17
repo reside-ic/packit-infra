@@ -1,4 +1,5 @@
-{ pkgs, config, lib, ... }: {
+{ pkgs, config, lib, self, ... }:
+{
   imports = [
     ./common/configuration.nix
   ];
