@@ -187,9 +187,27 @@ nix run .#nixosConfigurations.<hostname>.config.vault.tool -- --root here
 This will fetch all the secrets as the command on the server would have done,
 but store them relative to the `here` folder.
 
+## How do I inspect / edit the database?
+
+If doing this on the production instance, start by thinking very carefully
+about what you are about to do.
+
+From the VM console or an SSH session, you can use the `psql` tool to get an
+SQL session to the database of your choice. Each Packit instance uses its own
+database. The root Linux user has permissions to access any of them.
+
+```sh
+psql <instance>
+=# SELECT * FROM "user";
+```
+
+The database is initially populated by the packit-api service. During the first
+start of a new instance, it can take a minute for the service to start and for
+the database's tables to exist.
+
 ## How do I update NixOS?
 
-```
+```sh
 nix flake update
 ```
 

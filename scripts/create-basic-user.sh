@@ -12,7 +12,7 @@ PASSWORD=$3
 PASSWORD_BCRYPT=$(htpasswd -bnB "" "$PASSWORD" | tr -d ':\n')
 UUID=$(uuidgen)
 
-psql -U "$INSTANCE" -d "$INSTANCE" \
+psql -d "$INSTANCE" \
     -v "uuid=$UUID" \
     -v "username=$USERNAME" \
     -v "password=$PASSWORD_BCRYPT" <<EOF
