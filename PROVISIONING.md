@@ -96,6 +96,12 @@ ssh-keygen -R <fqdn>
     nixos-rebuild switch --flake ".#<hostname>" --target-host root@<fqdn>
     ```
 
+3. The machine is able to reboot and start correctly.
+
+    ```sh
+    ssh root@<fqdn> reboot
+    ```
+
 # Creating a new OAuth token
 
 1. Go to https://github.com/settings/developers
