@@ -29,7 +29,17 @@
         system = "x86_64-linux";
         specialArgs = { inherit inputs; };
         modules = [
-          ./configuration.nix
+          ./machines/wpia-packit.nix
+          ./hardware-configuration.nix
+          { nixpkgs = pkgsArgs; }
+        ];
+      };
+
+      nixosConfigurations.wpia-packit-private = nixpkgs.lib.nixosSystem {
+        system = "x86_64-linux";
+        specialArgs = { inherit inputs; };
+        modules = [
+          ./machines/wpia-packit-private.nix
           ./hardware-configuration.nix
           { nixpkgs = pkgsArgs; }
         ];
@@ -49,6 +59,17 @@
               nixos-rebuild switch \
                 --flake .#wpia-packit \
                 --target-host root@packit.dide.ic.ac.uk \
+                --use-substitutes
+            '';
+          };
+
+          deploy-private = pkgs.writeShellApplication {
+            name = "deploy-wpia-packit-private";
+            runtimeInputs = [ pkgs.nixos-rebuild ];
+            text = ''
+              nixos-rebuild switch \
+                --flake .#wpia-packit-private \
+                --target-host root@packit-private.dide.ic.ac.uk \
                 --use-substitutes
             '';
           };
@@ -89,6 +110,23 @@
                 fi
 
                 exec ${nixpkgs.lib.getExe self.nixosConfigurations.wpia-packit.config.system.build.vm} \
+                  -fw_cfg name=opt/vault-token,string="$token" "$@"
+              '';
+          };
+
+          start-vm-private = pkgs.writeShellApplication {
+            name = "start-vm-private";
+            runtimeInputs = [ pkgs.vault-bin ];
+            text =
+              let vaultUrl = self.nixosConfigurations.wpia-packit-private.config.vault.url;
+              in ''
+                token=$(vault print token)
+                if [[ -z $token ]]; then
+                  echo "Logging in to ${vaultUrl}"
+                  token=$(env VAULT_ADDR="${vaultUrl}" vault login -method=github -field=token)
+                fi
+
+                exec ${nixpkgs.lib.getExe self.nixosConfigurations.wpia-packit-private.config.system.build.vm} \
                   -fw_cfg name=opt/vault-token,string="$token" "$@"
               '';
           };
