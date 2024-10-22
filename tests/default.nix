@@ -6,7 +6,8 @@ pkgs.testers.runNixOSTest {
   };
   nodes.machine = { lib, config, ... }: {
     imports = [
-      ../configuration.nix
+      ../machines/common/configuration.nix
+      ../machines/common/services.nix
 
       # The `virtualisation.vmVariant` setting we use to import VM-specific
       # settings doesn't work for the test VMs, so re-import the vm module here.
@@ -14,11 +15,16 @@ pkgs.testers.runNixOSTest {
       ../vm.nix
     ];
 
-    # Having all the instances running slows down tests. Having just one
-    # instance is good enough.
-    services.multi-packit.instances = lib.mkForce [ "reside" ];
+    services.multi-packit = {
+      enable = true;
+      sslCertificate = "/var/secrets/packit.cert";
+      sslCertificateKey = "/var/secrets/packit.key";
+      githubOAuthSecret = "/var/secrets/github-oauth";
+      instances = [ "reside" ];
+    };
+
     services.packit-api.instances.reside = {
-      authentication = lib.mkForce {
+      authentication = {
         method = "basic";
         service.policies = [{
           jwkSetUri = "http://127.0.0.1:81/jwks.json";
