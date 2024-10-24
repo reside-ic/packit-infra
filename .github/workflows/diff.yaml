@@ -1,0 +1,35 @@
+on:
+  pull_request:
+
+jobs:
+  diff:
+    name: Compare
+    runs-on: ubuntu-22.04
+    permissions:
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: DeterminateSystems/nix-installer-action@main
+      - uses: DeterminateSystems/magic-nix-cache-action@main
+      - name: Run nix-diff
+        run: |
+          hostnames=$(nix eval --raw ".#nixosConfigurations" --apply 'x: builtins.concatStringsSep " " (builtins.attrNames x)')
+          for h in $hostnames; do
+            attribute="nixosConfigurations.$h.config.system.build.toplevel"
+            target=$(nix path-info --derivation ".#$attribute")
+            current=$(nix path-info --derivation ".?rev=${{ github.event.pull_request.base.sha }}&ref=${{ github.base_ref }}#$attribute")
+            printf '<details><summary>Comparing system configuration for %s against %s branch</summary>\n\n' "$h" "${{ github.base_ref }}" >> comment.txt
+            nix-diff --line-oriented $current $target | sed 's/^/    /' >> comment.txt
+            printf '\n\n</details>\n' >> comment.txt
+          done
+        shell: nix shell --inputs-from . nixpkgs#nix-diff --command bash -l {0}
+
+      - uses: thollander/actions-comment-pull-request@v3
+        with:
+          file-path: comment.txt
+          # To avoid flooding the PR with comments, we delete any previous
+          # comment and create a new one.
+          comment-tag: nix-diff
+          mode: recreate
