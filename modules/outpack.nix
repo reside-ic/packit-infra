@@ -33,6 +33,7 @@ in
       wantedBy = [ "multi-user.target" ];
       preStart = ''
         if [[ ! -d ${instanceCfg.path} ]]; then
+          printf >&2 "Initializing outpack root at %s" "${instanceCfg.path}"
           ${pkgs.outpack_server}/bin/outpack init --require-complete-tree --use-file-store ${instanceCfg.path}
         fi
       '';
