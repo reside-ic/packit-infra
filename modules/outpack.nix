@@ -1,4 +1,4 @@
-{ pkgs, lib, config, ... }:
+{ pkgs, self', lib, config, ... }:
 let
   inherit (lib) types;
   instanceModule = { name, ... }: {
@@ -33,11 +33,12 @@ in
       wantedBy = [ "multi-user.target" ];
       preStart = ''
         if [[ ! -d ${instanceCfg.path} ]]; then
-          ${pkgs.outpack_server}/bin/outpack init --require-complete-tree --use-file-store ${instanceCfg.path}
+          printf >&2 "Initializing outpack root at %s" "${instanceCfg.path}"
+          ${self'.packages.outpack_server}/bin/outpack init --require-complete-tree --use-file-store ${instanceCfg.path}
         fi
       '';
       serviceConfig = {
-        ExecStart = "${pkgs.outpack_server}/bin/outpack start-server --root ${instanceCfg.path} --listen 127.0.0.1:${toString instanceCfg.port}";
+        ExecStart = "${self'.packages.outpack_server}/bin/outpack start-server --root ${instanceCfg.path} --listen 127.0.0.1:${toString instanceCfg.port}";
       };
     };
   });
