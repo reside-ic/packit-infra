@@ -37,11 +37,13 @@ Delete the outpack root folder:
 rm -r /var/lib/outpack/<instance>
 ```
 
-Open an SQL session and delete all entries from the `packet` and `packet_group` tables.
+Open an SQL session and delete all entries from the `packet` and `packet_group`
+tables. Make sure you exit the session afterwards to return to the bash shell.
 ```sh
 psql <instance>
 =# DELETE FROM "packet";
 =# DELETE FROM "packet_group";
+=# exit
 ```
 
 Start outpack server and Packit again. The outpack service unit will re-create
