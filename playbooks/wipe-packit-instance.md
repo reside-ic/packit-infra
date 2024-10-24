@@ -5,7 +5,7 @@ This is a destructive operation with no way of rolling it back. It removes all
 data from the instance indiscriminately. There currently isn't any way to
 remove a single packet. Make sure you understand the consequences.
 
-These steps will preserves auxiliary data held in Packit, including users,
+These steps will preserve auxiliary data held in Packit, including users,
 roles and permissions.
 
 There are two places where data needs to be deleted: we need to remove the data
@@ -54,5 +54,5 @@ systemctl start outpack-<instance> packit-api-<instance>
 Check the service logs to make sure everything is up and running again. The
 `-r` flag shows logs in reverse order, ie. most recent entries first.
 ```sh
-journalctl -u outpack-reside -u packit-api-reside -r
+journalctl -u outpack-<instance> -u packit-api-<instance> -r
 ```
