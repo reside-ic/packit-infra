@@ -165,10 +165,16 @@ in
       wantedBy = [ "multi-user.target" ];
       wants = [ "postgresql.service" ];
       after = [ "postgresql.service" ];
+
       serviceConfig = {
         Type = "simple";
         DynamicUser = true;
         ProtectSystem = true;
+
+        # 143 exit code is standard Spring boot behaviour it seems.
+        # https://docs.spring.io/spring-boot/3.3.0/how-to/deployment/installing.html#howto.deployment.installing.system-d
+        SuccessExitStatus = "143";
+
         ExecStart =
           let arguments = lib.mapAttrsToList (k: v: "--${k}=${v}") (flattenProperties instanceCfg.properties); in
           lib.escapeShellArgs ([ "${pkgs.packit-api}/bin/packit-api" ] ++ arguments);

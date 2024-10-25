@@ -3,8 +3,10 @@
 This is only needed for the initial deployment. Subsequent modifications to the
 configuration can be deployed more easily.
 
-This assumes that a Linux (eg. Ubuntu) machine is has been provisioned running
-already, and that you have SSH access to that machine with sudo priviledges.
+This assumes that a Linux (eg. Ubuntu) machine is running already, and that you
+have SSH access to that machine with sudo priviledges. These steps will destroy
+everything that existed on the machine, so make sure it wasn't being used for
+anything important.
 
 The deployment works by downloading a minimal NixOS installer image onto the
 machine, using kexec to switch control from the currently running system into
@@ -17,7 +19,7 @@ process is automated thanks to the [nixos-anywhere][nixos-anywhere] tool.
 The instructions below use `<hostname>` and `<fqdn>` as placeholders.
 `<hostname>` should be the target machine's short hostname, eg. `wpia-packit`,
 whereas `<fqdn>` is the full DNS name for the machine, eg.
-`packit.dide.ic.ac.uk.
+`packit.dide.ic.ac.uk`.
 
 ## Hardware configuration
 
@@ -102,17 +104,24 @@ ssh-keygen -R <fqdn>
     ssh root@<fqdn> reboot
     ```
 
-# Creating a new OAuth token
+# Creating a new OAuth Application
 
-1. Go to https://github.com/settings/developers
-2. homepage: `https://packit.dide.ic.ac.uk`
-   callback URL: `https://packit.dide.ic.ac.uk`
+Packit needs a GitHub OAuth application to function. Each application can only
+be used with a single domain name. If deploying Packit to a new domain, a new
+application will need to be created for it.
+
+1. Go to https://github.com/organizations/reside-ic/settings/applications and click "New OAuth app".
+2. Fill in the form, using `https://<fqdn>` (eg.
+   `https://packit.dide.ic.ac.uk`) as both the "Homepage URL" and the
+   "Authentication callback URL". Tick the "Enable Device Flow" box.
 3. Click "Register Application"
 4. Copy the Client ID
 5. Generate and copy a client secret
 6. Click "Update Application"
-7. Store the secrets in Vault at `secret/packit/oauth/production`, with fields
+7. Store the two values in the Vault at a suitable location, with fields
    `clientId` and `clientSecret`.
+8. Make sure the application is owned by `reside-ic`, not your own personal
+   account. If needed, transfer ownership of it to `reside-ic`.
 
 # Pulling secrets onto the server
 
