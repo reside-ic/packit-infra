@@ -1,4 +1,4 @@
-{ pkgs, config, lib, ... }:
+{ pkgs, self', config, lib, ... }:
 let
   inherit (lib) types;
 
@@ -177,7 +177,7 @@ in
 
         ExecStart =
           let arguments = lib.mapAttrsToList (k: v: "--${k}=${v}") (flattenProperties instanceCfg.properties); in
-          lib.escapeShellArgs ([ "${pkgs.packit-api}/bin/packit-api" ] ++ arguments);
+          lib.escapeShellArgs ([ "${self'.packages.packit-api}/bin/packit-api" ] ++ arguments);
         EnvironmentFile = instanceCfg.environmentFiles;
       };
 

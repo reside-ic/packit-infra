@@ -18,12 +18,10 @@ curl --proto '=https' --tlsv1.2 -sSf -L https://install.determinate.systems/nix 
 ### How do I deploy to the server?
 
 ```sh
-nix run .#deploy
+nix run .#deploy <hostname>
 ```
 
-TODO: doing builds locally and then uploading them is pretty inefficient.
-There's almost certainly a way to do the build remotely and not have to transfer
-anything.
+Where `<hostname>` is replaced by `wpia-packit` or `wpia-packit-private`.
 
 ### How do I update outpack_server or Packit?
 
@@ -43,7 +41,7 @@ or master).
 ### How do I build the deployment?
 
 ```sh
-nix build
+nix build .#nixosConfigurations.<hostname>.config.system.build.toplevel
 ```
 
 This is useful to check syntax and that everything builds, but you don't
@@ -52,28 +50,28 @@ typically need to do it. Deploying will do it implicitely.
 ### How do I visualize the effect of my changes?
 
 ```
-nix run .#diff
+nix run .#diff <hostname>
 ```
 
 This will download the system that is currently running on the server and
 compare it with what would be deployed using [nix-diff](https://github.com/Gabriella439/nix-diff).
 
-`nix-diff` will omit derivations' environment comparison if some dependencies
-already differ. `nix run .#diff -- --environment` can help print all of these,
-but is likely to be very verbose.
+Alternatively, when opening a pull request on GitHub an action will run and
+compute the difference against the main branch for all machines, and post the
+result as a comment.
 
 ### How do I start a local VM?
 
 ```sh
-nix run .#start-vm
+nix run .#start-vm <hostname>
 ```
 
 This starts a local VM running in QEMU. Handy to check everything works as
 expected before deploying.
 
-When starting, this command will obtain a Vault token and inject it into the VM
-to be used for fetch GitHub client ID and secrets. If needed, you may be
-prompted for your GitHub personal access token.
+Before starting the local VM, this command will obtain a Vault token and inject
+it into the VM to be used for fetching GitHub client ID and secrets. If needed,
+you may be prompted for your GitHub personal access token.
 
 Port 443 of the VM is exposed as port 8443, meaning you may visit
 https://localhost:8443/ once the VM has started. nginx is configured using a
@@ -90,8 +88,8 @@ grant-role <instance> <github username> ADMIN
 ### How do I run the integration tests?
 
 ```sh
-nix run .#vm-test
-nix run .#vm-test -- --interactive
+nix run .#integration-test
+nix run .#integration-test -- --interactive
 ```
 
 The second command starts a Python session which may be used to interact with the test machine.
