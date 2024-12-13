@@ -1,14 +1,12 @@
-{ lib, pkgs, inputs, ... }: {
+{ self, config, lib, pkgs, self', inputs, ... }: {
   imports = [
-    ../../disk-config.nix
-    ../../tools.nix
+    ./tools.nix
     ../../modules/multi-packit.nix
     ../../modules/vault.nix
     ../../modules/outpack.nix
     ../../modules/packit-api.nix
     ../../modules/metrics-proxy.nix
     ./services.nix
-
     inputs.disko.nixosModules.disko
   ];
 
@@ -25,12 +23,13 @@
 
   networking.firewall.enable = true;
   networking.firewall.allowedTCPPorts = [ 22 80 443 9000 ];
+  networking.domain = "dide.ic.ac.uk";
 
   environment.systemPackages = [
     pkgs.curl
     pkgs.htop
     pkgs.vim
-    pkgs.outpack_server
+    self'.packages.outpack_server
     pkgs.gitMinimal
   ];
 
@@ -44,6 +43,10 @@
   };
 
   nix.settings.experimental-features = [ "nix-command" "flakes" ];
+
+  # Keep derivations when garbage collecting the Nix store. We use these
+  # derivations to run `nix-diff` against a running system.
+  nix.settings.keep-derivations = true;
 
   system.stateVersion = "24.05";
 }
