@@ -32,7 +32,7 @@ if __name__ == "__main__":
         client.token = login_response["auth"]["client_token"]
 
     spec = json.load(args.spec)
-    for entry in spec:
+    for entry in spec.values():
         path = args.root.joinpath(Path(entry["path"]).relative_to("/"))
         print(f"Reading {entry['mount']}/{entry['key']} to {path}")
         path.parent.mkdir(parents=True, exist_ok=True)
