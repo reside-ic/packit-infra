@@ -5,6 +5,7 @@
     ./common/disk-config.nix
     ./common/base.nix
     ./common/services.nix
+    ./common/autodeploy.nix
   ];
 
   networking.hostName = "wpia-packit-dev";

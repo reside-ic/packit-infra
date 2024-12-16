@@ -9,6 +9,7 @@
     ../../modules/metrics-proxy.nix
     ./tools.nix
     inputs.disko.nixosModules.disko
+    inputs.comin.nixosModules.comin
   ];
 
   virtualisation.vmVariant = {
