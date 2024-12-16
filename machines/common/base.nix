@@ -1,12 +1,13 @@
+# This file defines the basic configuration for a functional NixOS machine.
+# It won't enable any of packit/outpack/metrics, see `services.nix` for that.
 { self, config, lib, pkgs, self', inputs, ... }: {
   imports = [
-    ./tools.nix
     ../../modules/multi-packit.nix
     ../../modules/vault.nix
     ../../modules/outpack.nix
     ../../modules/packit-api.nix
     ../../modules/metrics-proxy.nix
-    ./services.nix
+    ./tools.nix
     inputs.disko.nixosModules.disko
   ];
 
@@ -33,6 +34,7 @@
     pkgs.gitMinimal
   ];
 
+  services.openssh.enable = true;
   users.users.root.openssh.authorizedKeys.keyFiles = [
     ../../authorized_keys
   ];

@@ -55,7 +55,7 @@ in
       };
 
       secrets = lib.mkOption {
-        type = lib.types.listOf (lib.types.submodule secretModule);
+        type = lib.types.attrsOf (lib.types.submodule secretModule);
       };
 
       spec = lib.mkOption {

@@ -6,21 +6,22 @@
     host.port = 8443;
     guest.port = 443;
   }];
-  virtualisation.qemu.options = [ "-nographic" ];
+  virtualisation.graphics = false;
 
   services.multi-packit = {
     domain = lib.mkForce "localhost:8443";
   };
 
-  vault.secrets = lib.mkForce [{
-    key = "packit/githubauth/auth/githubclient";
-    path = "/var/secrets/github-oauth";
-    fields.PACKIT_GITHUB_CLIENT_ID = "id";
-    fields.PACKIT_GITHUB_CLIENT_SECRET = "secret";
-    format = "env";
-  }];
+  vault.secrets = lib.mkForce {
+    github-oauth = {
+      key = "packit/githubauth/auth/githubclient";
+      path = "/var/secrets/github-oauth";
+      fields.PACKIT_GITHUB_CLIENT_ID = "id";
+      fields.PACKIT_GITHUB_CLIENT_SECRET = "secret";
+      format = "env";
+    };
+  };
 
-  networking.hostName = lib.mkForce "wpia-packit-vm";
   users.motd = ''
     Server is available at https://${config.services.multi-packit.domain}.
     Use the 'Ctrl-A x' sequence or the `shutdown now` command to terminate the VM session.

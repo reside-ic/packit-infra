@@ -1,7 +1,6 @@
 { pkgs, config, lib, inputs, ... }:
 {
   services.nginx.enable = true;
-  services.openssh.enable = true;
   services.openssh.settings.HostKeyAlgorithms = lib.concatStringsSep "," [
     "rsa-sha2-512"
     "rsa-sha2-256"
@@ -28,6 +27,23 @@
       host  all      all     127.0.0.1/32   trust
       host  all      all     ::1/128        trust
     '';
+  };
+
+  services.multi-packit = {
+    sslCertificate = "/var/secrets/packit.cert";
+    sslCertificateKey = "/var/secrets/packit.key";
+    githubOAuthSecret = "/var/secrets/github-oauth";
+  };
+
+  vault.secrets = {
+    ssl-certificate.path = "/var/secrets/packit.cert";
+    ssl-key.path = "/var/secrets/packit.key";
+    github-oauth = {
+      path = "/var/secrets/github-oauth";
+      fields.PACKIT_GITHUB_CLIENT_ID = "clientId";
+      fields.PACKIT_GITHUB_CLIENT_SECRET = "clientSecret";
+      format = "env";
+    };
   };
 
   services.metrics-proxy = {

@@ -5,7 +5,7 @@ pkgs.testers.runNixOSTest {
   node.specialArgs = specialArgs;
   nodes.machine = { lib, config, ... }: {
     imports = [
-      ../../machines/common/configuration.nix
+      ../../machines/common/base.nix
       ../../machines/common/services.nix
 
       # The `virtualisation.vmVariant` setting we use to import VM-specific
