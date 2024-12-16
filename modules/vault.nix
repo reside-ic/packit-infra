@@ -56,6 +56,7 @@ in
 
       secrets = lib.mkOption {
         type = lib.types.attrsOf (lib.types.submodule secretModule);
+        default = { };
       };
 
       spec = lib.mkOption {
