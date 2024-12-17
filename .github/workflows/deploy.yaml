@@ -1,0 +1,57 @@
+on:
+  pull_request:
+  push:
+    branches: [ main ]
+
+jobs:
+  prepare:
+    name: List available hostnames
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: DeterminateSystems/nix-installer-action@main
+      - id: list-hostnames
+        run:
+          echo "hostnames=$(nix eval --json '.#nixosConfigurations' --apply builtins.attrNames)" >> $GITHUB_OUTPUT
+
+    outputs:
+      hostnames: ${{ steps.list-hostnames.outputs.hostnames }}
+
+  build:
+    needs: prepare
+    runs-on: ubuntu-22.04
+    strategy:
+      matrix:
+        hostname: ${{ fromJson(needs.prepare.outputs.hostnames) }}
+
+    name: Build ${{matrix.hostname}}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: DeterminateSystems/nix-installer-action@main
+      - uses: DeterminateSystems/magic-nix-cache-action@main
+      # - run: nix build -L --no-link .#nixosConfigurations.${{matrix.hostname}}.config.system.build.toplevel
+
+  deploy:
+    needs: [prepare, build]
+    runs-on: ubuntu-22.04
+    strategy:
+      matrix:
+        hostname: ${{ fromJson(needs.prepare.outputs.hostnames) }}
+
+    name: Deploy to ${{matrix.hostname}}
+    environment: ${{matrix.hostname}}
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - run: |
+          git config --global user.name github-actions
+          git config --global user.email github-actions@github.com
+          if git rev-parse --quiet --verify "origin/deploy/${{matrix.hostname}}" > /dev/null; then
+            git branch "deploy/${{matrix.hostname}}" "origin/deploy/${{matrix.hostname}}"
+          fi
+          .github/workflows/sync-branches.sh "${{matrix.hostname}}"
+          git push origin "deploy/${{matrix.hostname}}"
