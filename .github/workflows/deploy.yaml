@@ -18,16 +18,34 @@ jobs:
     outputs:
       hostnames: ${{ steps.list-hostnames.outputs.hostnames }}
 
-  deploy:
+  build:
     needs: prepare
     runs-on: ubuntu-22.04
     strategy:
       matrix:
         hostname: ${{ fromJson(needs.prepare.outputs.hostnames) }}
 
-    name: Deploy to ${{matrix.hostname}}
+    name: Build ${{matrix.hostname}}
     steps:
       - uses: actions/checkout@v4
       - uses: DeterminateSystems/nix-installer-action@main
       - uses: DeterminateSystems/magic-nix-cache-action@main
-      - run: nix build -L --no-link .#nixosConfigurations.${{matrix.hostname}}.config.system.build.toplevel
+      # - run: nix build -L --no-link .#nixosConfigurations.${{matrix.hostname}}.config.system.build.toplevel
+
+  deploy:
+    needs: [prepare, build]
+    runs-on: ubuntu-22.04
+    strategy:
+      matrix:
+        hostname: ${{ fromJson(needs.prepare.outputs.hostnames) }}
+
+    name: Build ${{matrix.hostname}}
+    environment: ${{matrix.hostname}}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          depth: 0
+
+      - run: |
+          git branch "deploy/${{matrix.hostname}}" "origin/deploy/${{matrix.hostname}}"
+          .github/workflows/sync-branches.sh "${{matrix.hostname}}"
