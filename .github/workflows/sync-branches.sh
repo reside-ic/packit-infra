@@ -11,13 +11,15 @@ machine=$1
 branch=deploy/$machine
 ref=refs/heads/$branch
 rev=$(git rev-parse HEAD)
-revShort=$(git rev-parse --short HEAD)
+revShort=$(git rev-parse --short $rev)
 tree=$(git rev-parse $rev:)
 
 if ! previous=$(git rev-parse --quiet --verify "$ref"); then
   echo "Creating new branch $branch"
   empty=$(git hash-object -t tree /dev/null)
   previous=$(git commit-tree -m "Initial deployment to $machine" $empty)
+else
+  echo "Using existing branch $branch as $(git rev-parse --short $previous)"
 fi
 
 if git rev-parse "$previous^@" | grep -q $rev; then
@@ -27,5 +29,5 @@ else
   commit=$(git commit-tree -m "Deploy $rev to $machine" -p $previous -p $rev $tree)
 fi
 
-echo "Updating $branch with $revShort as a parent."
+echo "Deploying $(git rev-parse --short $commit) to $branch (using $revShort)"
 git update-ref $ref $commit

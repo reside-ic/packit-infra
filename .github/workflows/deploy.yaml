@@ -48,7 +48,8 @@ jobs:
       - run: |
           git config --global user.name github-actions
           git config --global user.email github-actions@github.com
-          if git rev-parse --quiet "origin/deploy/${{matrix.hostname}}" > /dev/null; then
+          if git rev-parse --quiet --verify "origin/deploy/${{matrix.hostname}}" > /dev/null; then
             git branch "deploy/${{matrix.hostname}}" "origin/deploy/${{matrix.hostname}}"
           fi
           .github/workflows/sync-branches.sh "${{matrix.hostname}}"
+          git push origin "deploy/${{matrix.hostname}}"
