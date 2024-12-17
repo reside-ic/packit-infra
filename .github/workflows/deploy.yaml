@@ -46,5 +46,9 @@ jobs:
           fetch-depth: 0
 
       - run: |
-          git branch "deploy/${{matrix.hostname}}" "origin/deploy/${{matrix.hostname}}"
+          git config --global user.name github-actions
+          git config --global user.email github-actions@github.com
+          if git rev-parse --quiet "origin/deploy/${{matrix.hostname}}" > /dev/null; then
+            git branch "deploy/${{matrix.hostname}}" "origin/deploy/${{matrix.hostname}}"
+          fi
           .github/workflows/sync-branches.sh "${{matrix.hostname}}"
