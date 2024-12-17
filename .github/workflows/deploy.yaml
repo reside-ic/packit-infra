@@ -10,7 +10,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: DeterminateSystems/nix-installer-action@main
-      - uses: DeterminateSystems/magic-nix-cache-action@main
       - id: list-hostnames
         run:
           echo "hostnames=$(nix eval --json '.#nixosConfigurations' --apply builtins.attrNames)" >> $GITHUB_OUTPUT
@@ -39,12 +38,12 @@ jobs:
       matrix:
         hostname: ${{ fromJson(needs.prepare.outputs.hostnames) }}
 
-    name: Build ${{matrix.hostname}}
+    name: Deploy to ${{matrix.hostname}}
     environment: ${{matrix.hostname}}
     steps:
       - uses: actions/checkout@v4
         with:
-          depth: 0
+          fetch-depth: 0
 
       - run: |
           git branch "deploy/${{matrix.hostname}}" "origin/deploy/${{matrix.hostname}}"
