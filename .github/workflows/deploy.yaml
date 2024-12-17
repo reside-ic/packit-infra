@@ -1,0 +1,32 @@
+on:
+  pull_request:
+  push:
+    branches: [ main ]
+
+jobs:
+  prepare:
+    name: List available hostnames
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: DeterminateSystems/nix-installer-action@main
+      - uses: DeterminateSystems/magic-nix-cache-action@main
+      - id: list-hostnames
+        run:
+          echo "hostnames=$(nix eval --json '.#nixosConfigurations' --apply builtins.attrNames)" >> $GITHUB_OUTPUT
+
+    outputs:
+      hostnames: ${{ steps.list-hostnames.outputs.hostnames }}
+
+  deploy:
+    needs: prepare
+    strategy:
+      matrix:
+        hostname: ${{ fromJson(needs.prepare.outputs.hostnames) }}
+
+    name: Deploy to ${{matrix.hostname}}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: DeterminateSystems/nix-installer-action@main
+      - uses: DeterminateSystems/magic-nix-cache-action@main
+      - run: nix build -L --no-link .#${{matrix.hostname}}
