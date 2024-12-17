@@ -40,6 +40,8 @@ jobs:
 
     name: Deploy to ${{matrix.hostname}}
     environment: ${{matrix.hostname}}
+    permissions:
+      contents: write
     steps:
       - uses: actions/checkout@v4
         with:
