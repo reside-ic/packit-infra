@@ -30,4 +30,4 @@ jobs:
       - uses: actions/checkout@v4
       - uses: DeterminateSystems/nix-installer-action@main
       - uses: DeterminateSystems/magic-nix-cache-action@main
-      - run: nix build -L --no-link .#${{matrix.hostname}}
+      - run: nix build -L --no-link .#nixosConfigurations.${{matrix.hostname}}.config.system.build.toplevel
