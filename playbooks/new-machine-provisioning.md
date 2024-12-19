@@ -16,59 +16,75 @@ process is automated thanks to the [nixos-anywhere][nixos-anywhere] tool.
 
 [nixos-anywhere]: https://github.com/nix-community/nixos-anywhere/blob/main/docs/quickstart.md
 
-The instructions below use `<hostname>` and `<fqdn>` as placeholders.
-`<hostname>` should be the target machine's short hostname, eg. `wpia-packit`,
-whereas `<fqdn>` is the full DNS name for the machine, eg.
-`packit.dide.ic.ac.uk`.
+The instructions below use `<username>`, `<hostname>` and `<fqdn>` as
+placeholders:
+- `<username>` is a user on the existing system that has elevated priviledges,
+    and for which you have SSH access. This would typically be `root` or
+    `vagrant`.
+- `<hostname>` should be the target machine's short hostname, eg. `wpia-packit`.
+- `<fqdn>` is the full DNS name for the machine, eg. `wpia-packit.dide.ic.ac.uk`.
 
 ## Hardware configuration
 
 > [!NOTE]
 > If deploying to a new machine that is similar to an existing one (eg.
-> deploying to a second Hyper-V VM), this step can be skipped. Instead copy the
-> `hardware-configuration.nix` file from the existing machine's configuration
-> and into the new one.
+> deploying to a second Hyper-V VM), this step can be skipped. Instead use the
+> existing `hardware-configuration.nix` file from the other machine's
+> configuration. In doubt, you can also generate the configuration and compare it
+> against an existing one.
 
 The `hardware-configuration.nix` file is used to describe the machine's
 hardware and configure any necessary extra kernel modules. It is generated
-automatically using the `nixos-generate-config` tool.
+automatically by running the `nixos-generate-config` command on the target
+machine itself.
 
-Before the `nixos-generate-config` tool can be run, the machine must be booted
-into its installer first. This is done by connecting to the machine over SSH
-and running the following command:
-
-```sh
-curl -L https://github.com/nix-community/nixos-images/releases/download/nixos-24.05/nixos-kexec-installer-noninteractive-x86_64-linux.tar.gz | sudo tar -xzf- -C /root
-sudo /root/kexec/run
-```
-
-On your local machine you can now use `nixos-generate-config` over SSH to
-generate the configuration and pipe it into a file:
+The nixos-anywhere tool can be used to automate the process: the following
+command will connect to the machine, use `kexec` to reboot into the installer,
+runs `nixos-generate-config` and saves the result on your local machine to
+`path/to/hardware-configuration.nix`.
 
 ```sh
-ssh root@<fqdn> nixos-generate-config --show-hardware-config --no-filesystems > path/to/hardware-configuration.nix
+nix run github:nix-community/nixos-anywhere -- --flake ".#<hostname>" \
+  --phases "kexec" \
+  --generate-hardware-config nixos-generate-config path/to/hardware-configuration.nix \
+  <username>@<fqdn>
 ```
+
+> [!NOTE]
+> After nixos-anywhere has run for the first time, the machine will be running
+> the NixOS installer and the `<username>` that was initially used will not
+> exist anymore. For subsequent steps, use `root` as the username instead.
 
 ## Preparing the configuration
 
-In `flake.nix` add a new entry under `nixosConfigurations.<hostname>` which will
-be the system configuration. For the initial provisioning, it is wise to start
-with a minimal configuration, and then expand it progressively following the
-day-to-day deployment process.
+In `machines/default.nix` add a new entry under
+`nixosConfigurations.<hostname>` which will be the system configuration. For
+the initial provisioning, it is wise to start with a minimal configuration, and
+then expand it progressively following the day-to-day deployment process.
 
-Make sure the configuration includes the following:
-1. The ssh server is enabled, by setting `services.openssh.enable = true`.
-2. Your SSH public key is added to the root account, with the
-   `users.users.root.openssh.authorizedKeys` option.
-3. The hardware configuration, by importing the generated
-    `hardware-configuration.nix`.
-4. The disk configuration. The existing `disk-config.nix` file should suffice
-    for most cases and can be imported into your configuration.
+The bare minimum configuration should look like:
+```nix
+{
+  imports = [
+    ./common/hardware-configuration.nix
+    ./common/disk-config.nix
+    ./common/base.nix
+  ];
+  networking.hostName = "<hostname>";
+}
+```
+
+- The `hardware-configuration.nix` file should be the file generated earlier, or
+  one re-used from a similar machine.
+- The `disk-config.nix` file describes how the disk should be partitioned. The
+  existing configuration is likely to be suitable.
+- The `base.nix` file includes the basic configuration options needed, including
+  enabling the SSH server, opening the firewall for it and configuring SSH keys.
 
 ## Running the installer
 
 ```sh
-nix run github:nix-community/nixos-anywhere -- --flake ".#<hostname>" root@<fqdn>
+nix run github:nix-community/nixos-anywhere -- --flake ".#<hostname>" <username>@<fqdn>
 ```
 
 ## Refreshing SSH known hosts
@@ -95,13 +111,19 @@ ssh-keygen -R <fqdn>
 2. You can update the configuration:
 
     ```sh
-    nixos-rebuild switch --flake ".#<hostname>" --target-host root@<fqdn>
+    nix run .#deploy <hostname>
     ```
 
 3. The machine is able to reboot and start correctly.
 
     ```sh
     ssh root@<fqdn> reboot
+    ```
+
+4. You can ssh again after the machine rebooted
+
+    ```sh
+    ssh root@<fqdn>
     ```
 
 # Creating a new OAuth Application
@@ -111,15 +133,15 @@ be used with a single domain name. If deploying Packit to a new domain, a new
 application will need to be created for it.
 
 1. Go to https://github.com/organizations/reside-ic/settings/applications and click "New OAuth app".
-2. Fill in the form, using `https://<fqdn>` (eg.
+2. Fill in the form, using `https://<domain>` (eg.
    `https://packit.dide.ic.ac.uk`) as both the "Homepage URL" and the
    "Authentication callback URL". Tick the "Enable Device Flow" box.
 3. Click "Register Application"
 4. Copy the Client ID
 5. Generate and copy a client secret
 6. Click "Update Application"
-7. Store the two values in the Vault at a suitable location, with fields
-   `clientId` and `clientSecret`.
+7. Store the two values in the Vault at a suitable location (eg.
+   `packit/oauth/production`), with fields `clientId` and `clientSecret`.
 8. Make sure the application is owned by `reside-ic`, not your own personal
    account. If needed, transfer ownership of it to `reside-ic`.
 
