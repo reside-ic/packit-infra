@@ -58,4 +58,8 @@
     };
 
   services.getty.autologinUser = "root";
+
+  # Disable auto-deploy of local VMs, this would be pretty surprising and
+  # hinder local development.
+  services.comin.enable = lib.mkForce false;
 }

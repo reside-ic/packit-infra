@@ -3,6 +3,8 @@
   inputs.disko.url = "github:nix-community/disko";
   inputs.disko.inputs.nixpkgs.follows = "nixpkgs";
   inputs.flake-parts.url = "github:hercules-ci/flake-parts";
+  inputs.comin.url = "github:nlewo/comin";
+  inputs.comin.inputs.nixpkgs.follows = "nixpkgs";
 
   outputs = inputs: inputs.flake-parts.lib.mkFlake { inherit inputs; } ({ withSystem, lib, self, nixpkgs, ... }: {
     imports = [

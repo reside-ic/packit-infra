@@ -39,6 +39,10 @@
       upstream = "http://localhost:${toString config.services.prometheus.exporters.node.port}/metrics";
       labels.job = "machine-metrics";
     };
+    endpoints."comin" = lib.mkIf config.services.comin.enable {
+      upstream = "http://localhost:${toString config.services.comin.exporter.port}/metrics";
+      labels.job = "comin";
+    };
   };
 
   environment.etc."metrics/static-metrics.prom".text =
