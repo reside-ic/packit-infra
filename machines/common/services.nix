@@ -41,20 +41,21 @@
     };
   };
 
+  environment.etc."metrics/static-metrics.prom".text =
+    let
+      inherit (inputs) self;
+      rev = self.rev or self.dirtyRev or "unknown";
+    in
+    ''
+      nixos_configuration_info{revision="${rev}"} 1
+    '';
+
   services.prometheus.exporters = {
-    node =
-      let
-        inherit (inputs) self;
-        rev = self.rev or self.dirtyRev or "unknown";
-        staticMetrics = pkgs.writeTextDir "static-metrics.prom" ''
-          nixos_configuration_info{revision="${rev}", flake_hash="${self.narHash}"} 1
-        '';
-      in
-      {
-        enable = true;
-        enabledCollectors = [ "systemd" "textfile" ];
-        extraFlags = [ "--collector.textfile.directory=${staticMetrics}" ];
-        port = 9001;
-      };
+    node = {
+      enable = true;
+      enabledCollectors = [ "systemd" "textfile" ];
+      extraFlags = [ "--collector.textfile.directory=/etc/metrics" ];
+      port = 9001;
+    };
   };
 }
