@@ -25,18 +25,25 @@ Where `<hostname>` is replaced by `wpia-packit` or `wpia-packit-private`.
 
 ### How do I update outpack_server or Packit?
 
+The Git revision of outpack_server and packit is pinned in JSON files found in
+the [`packages/` directory](packages). These files also locks the packages'
+dependencies.
+
+A [GitHub actions workflow](.github/workflows/update.yaml) runs nightly and
+creates (or updates) a pull request to update outpack_server and Packit to
+their latest revision. If necessary, the workflow can also be triggered
+manually, in which case an alternative branch may be specified.
+
+After merging the pull request created by the workflow, you should re-deploy to
+all hosts following the instructions above.
+
+Equivalently, you may update the versions manually yourself by running either
+of the following commands:
+
 ```
-nix run .#update packit
 nix run .#update outpack_server
+nix run .#update packit
 ```
-
-The sources are defined in files at `packages/{packit,outpack_server}/source.json`.
-The update script automatically fetches the latest revision from GitHub, and
-updates the necessary hashes.
-
-It also accepts a `--branch` argument which may be used to specify a branch
-name. Otherwise the default branch of the repository will be used (usually main
-or master).
 
 ### How do I build the deployment?
 
