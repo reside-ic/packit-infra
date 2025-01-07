@@ -25,22 +25,30 @@ let
     }
   '';
 
-  makePackage = args@{ nativeBuildInputs ? [ ], ... }: stdenv.mkDerivation (finalAttrs: {
-    src = fetchFromGitHub sources.src;
-    sourceRoot = "${finalAttrs.src.name}/api";
+  makePackage =
+    { nativeBuildInputs ? [ ]
+    , gradleFlags ? [ ]
+    , ...
+    }@args: stdenv.mkDerivation (finalAttrs: {
+      src = fetchFromGitHub sources.src;
+      sourceRoot = "${finalAttrs.src.name}/api";
 
-    nativeBuildInputs = [ gradle ] ++ nativeBuildInputs;
-    buildPhase = ''
-      runHook preBuild
+      nativeBuildInputs = [ gradle ] ++ nativeBuildInputs;
 
-      export GRADLE_USER_HOME=$(mktemp -d)
-      gradle --no-daemon --console=plain --info \
-        -I ${replaceGitProperties} $gradleFlags \
-        :app:bootJar
+      dontUseGradleConfigure = true;
+      gradleFlags = gradleFlags ++ [
+        "--no-daemon"
+        "--console=plain"
+        "--init-script=${replaceGitProperties}"
+      ];
+      gradleBuildTask = ":app:bootJar";
 
-      runHook postBuild
-    '';
-  } // (builtins.removeAttrs args [ "nativeBuildInputs" ]));
+      configurePhase = ''
+        runHook preCofigure
+        export GRADLE_USER_HOME=$(mktemp -d)
+        runHook postConfigure
+      '';
+    } // (builtins.removeAttrs args [ "nativeBuildInputs" "gradleFlags" ]));
 
   deps = makePackage {
     name = "packit-api-deps";
@@ -82,7 +90,7 @@ let
 in
 makePackage {
   name = "packit-api";
-  gradleFlags = "--offline --init-script ${gradleInit}";
+  gradleFlags = [ "--offline" "--init-script=${gradleInit}" ];
   nativeBuildInputs = [ makeWrapper ];
   installPhase = ''
     mkdir -p $out/bin $out/share
