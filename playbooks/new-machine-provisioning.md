@@ -126,6 +126,17 @@ ssh-keygen -R <fqdn>
     ssh root@<fqdn>
     ```
 
+## Add the machine to Prometheus
+
+The prometheus instance running on `bots.dide.ic.ac.uk` needs to be made aware
+of your newly created Packit host.
+
+Modify [the `packit` scrape rules in `prometheus.yml`](prometheus.yml) to add
+the new hostname. Individual services and Packit instances running on the host
+are discovered automatically.
+
+[prometheus.yml]: https://github.com/vimc/montagu-monitor/blob/7370692/config/prometheus/prometheus.yml#L127-L135
+
 # Creating a new OAuth Application
 
 Packit needs a GitHub OAuth application to function. Each application can only

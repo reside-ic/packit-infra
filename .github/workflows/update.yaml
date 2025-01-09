@@ -1,0 +1,105 @@
+# This workflow runs nightly and pulls in new version of packit and
+# outpack_server into this repository, by running the `scripts/update.py`
+# script.
+#
+# If any updates are found, a pull request is created with the changes. If an
+# open pull request already exists, it is updated instead.
+#
+# In addition to running automatically, this workflow may be triggered
+# manually. When doing so, one may specify a particular Git ref to update
+# either package to.
+#
+# Using the `gh` command-line tool, assuming mrc-1234 is a valid branch on the
+# mrc-ide/packit repository:
+#
+# ```
+# gh workflow run -R reside-ic/packit-infra update.yaml -f packit=mrc-1234
+# ```
+
+name: Update packages
+on:
+  schedule:
+    - cron: '0 0 * * *' # Daily at midnight UTC
+
+  workflow_dispatch:
+    inputs:
+      outpack_server:
+        description: 'Git ref from which to update outpack_server'
+        type: string
+        required: true
+        default: 'HEAD'
+
+      packit:
+        description: 'Git ref from which to update packit'
+        type: string
+        required: true
+        default: 'HEAD'
+
+jobs:
+  update:
+    runs-on: ubuntu-22.04
+    permissions:
+      pull-requests: write
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: DeterminateSystems/nix-installer-action@main
+      - uses: DeterminateSystems/magic-nix-cache-action@main
+
+      - name: Update outpack_server
+        run: nix run .#update outpack_server -- --ref ${{ inputs.outpack_server }} --write-commit-log ${{ runner.temp }}/outpack_server.md
+      - name: Update packit
+        run: nix run .#update packit -- --ref ${{ inputs.packit }} --write-commit-log ${{ runner.temp }}/packit.md
+
+      - name: Prepare PR message
+        uses: actions/github-script@v7
+        id: prepare-message
+        with:
+          script: |
+            const fs = require("fs");
+            const lf = new Intl.ListFormat('en');
+
+            var packages = [];
+            var message = "";
+            for (const p of ["outpack_server", "packit"]) {
+              if (fs.existsSync(`${process.env.RUNNER_TEMP}/${p}.md`)) {
+                var sources = JSON.parse(fs.readFileSync(`packages/${p}/sources.json`));
+                message += `# Updating ${p} to ${sources.src.rev}\n`;
+                message += fs.readFileSync(`${process.env.RUNNER_TEMP}/${p}.md`);
+                packages.push(p);
+              }
+            }
+            core.setOutput('title', "Update " + lf.format(packages));
+            core.setOutput('body', message);
+
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v7
+        id: create-pr
+        with:
+          branch: actions/update-packages
+          title: ${{ steps.prepare-message.outputs.title }}
+          body: ${{ steps.prepare-message.outputs.body }}
+          commit-message: |
+            ${{ steps.prepare-message.outputs.title }}
+
+            ${{ steps.prepare-message.outputs.body }}
+          reviewers: plietar
+
+      - name: Comment hint
+        uses: thollander/actions-comment-pull-request@v3
+        if: steps.create-pr.outputs.pull-request-operation == 'created'
+        with:
+          pr-number: ${{ steps.create-pr.outputs.pull-request-number }}
+          message: |
+            You can deploy this pull request by running the following command:
+
+            ```sh
+            nix run "github:${{ github.repository }}?ref=refs/pull/${{ steps.create-pr.outputs.pull-request-number }}/merge#deploy" <hostname>
+            ```
+
+            After merging this pull request, you must deploy the ${{ github.event.repository.default_branch }} branch to each host by running the following command:
+
+            ```sh
+            nix run "github:${{ github.repository }}#deploy" <hostname>
+            ```

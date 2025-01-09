@@ -16,6 +16,7 @@ import os.path
 import re
 import subprocess
 import sys
+from contextlib import nullcontext
 from urllib.request import urlopen, Request
 from urllib.parse import urljoin
 
@@ -172,8 +173,15 @@ def update(args):
             return
     else:
         print(f"Updating {args.name} from {metadata['rev']} to {rev}")
-        for m in commit_log(args.owner, args.repo, metadata["rev"], rev):
-            print(f"- {m}")
+        messages = commit_log(args.owner, args.repo, metadata["rev"], rev)
+
+        if args.write_commit_log is not None:
+            f = open(args.write_commit_log, "w")
+        else:
+            nullcontext(sys.stdout)
+
+        with f:
+            f.writelines(f"- {m}\n" for m in messages)
 
     source_hash = prefetch_src(args.name, args.owner, args.repo, rev)
     deps_hash = {
@@ -207,6 +215,10 @@ if __name__ == "__main__":
         help="Git reference (branch name, tag or commit hash)",
         default="HEAD")
     parser.add_argument("--output", help="File in which to write the result.")
+    parser.add_argument(
+        "--write-commit-log",
+        help="File in which to write the commit log."
+    )
     parser.add_argument(
         "--force",
         action="store_true",
