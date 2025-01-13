@@ -25,26 +25,51 @@ let
     }
   '';
 
-  makePackage = args@{ nativeBuildInputs ? [ ], ... }: stdenv.mkDerivation (finalAttrs: {
-    src = fetchFromGitHub sources.src;
-    sourceRoot = "${finalAttrs.src.name}/api";
+  makePackage =
+    { nativeBuildInputs ? [ ]
+    , gradleFlags ? [ ]
+    , ...
+    }@args: stdenv.mkDerivation (finalAttrs: {
+      src = fetchFromGitHub sources.src;
+      sourceRoot = "${finalAttrs.src.name}/api";
 
-    nativeBuildInputs = [ gradle ] ++ nativeBuildInputs;
-    buildPhase = ''
-      runHook preBuild
+      nativeBuildInputs = [ gradle ] ++ nativeBuildInputs;
 
-      export GRADLE_USER_HOME=$(mktemp -d)
-      gradle --no-daemon --console=plain --info \
-        -I ${replaceGitProperties} $gradleFlags \
-        :app:bootJar
+      # The default gradle configure forces --offline, which we don't want for
+      # our deps fetching phase. We do our own configure instead.
+      dontUseGradleConfigure = true;
 
-      runHook postBuild
-    '';
-  } // (builtins.removeAttrs args [ "nativeBuildInputs" ]));
+      gradleFlags = gradleFlags ++ [
+        "--no-daemon"
+        "--console=plain"
+        "--init-script=${replaceGitProperties}"
+      ];
+      gradleBuildTask = ":app:bootJar";
+
+      configurePhase = ''
+        runHook preCofigure
+        export GRADLE_USER_HOME=$(mktemp -d)
+        runHook postConfigure
+      '';
+    } // (builtins.removeAttrs args [ "nativeBuildInputs" "gradleFlags" ]));
 
   deps = makePackage {
     name = "packit-api-deps";
     nativeBuildInputs = [ perl ];
+
+    # This slight insanity searches the gradle cache and transforms it into a
+    # file layout that looks like a Maven repository. The repository we create
+    # can then be used as an input to the real build.
+    #
+    # We need the sort to keep things deterministic: the cache may contain the
+    # same file name twice with different hashes, as long as we pick a winner
+    # deterministically things are generally okay.
+    #
+    # The perl command transforms the paths, turning the following
+    # /path/to/cache/org.springframework/spring-beans/6.0.4/30ee07d3fcc6bbf13ab4ddca2dff9ebad55dee51/spring-beans-6.0.4.pom
+    # into
+    # $out/org/springframework/spring-beans/6.0.4/spring-beans-6.0.4.pom
+    #
     installPhase = ''
       find $GRADLE_USER_HOME/caches/modules-2 -type f -regex '.*\.\(jar\|pom\|module\)' \
          | LC_ALL=C sort \
@@ -52,6 +77,7 @@ let
          | sh
       rm -rf $out/tmp
     '';
+
     outputHashAlgo = "sha256";
     outputHashMode = "recursive";
     outputHash = sources.gradleDepsHash;
@@ -82,7 +108,7 @@ let
 in
 makePackage {
   name = "packit-api";
-  gradleFlags = "--offline --init-script ${gradleInit}";
+  gradleFlags = [ "--offline" "--init-script=${gradleInit}" ];
   nativeBuildInputs = [ makeWrapper ];
   installPhase = ''
     mkdir -p $out/bin $out/share
