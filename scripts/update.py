@@ -23,13 +23,15 @@ from urllib.parse import urljoin
 PRELUDE = """
 let
   overrideHash = p: hash:
-    p.overrideAttrs (_: { outputHash = hash; outputHashAlgo = "sha256"; });
+    p.overrideAttrs { outputHash = hash; outputHashAlgo = "sha256"; };
 
   overrideGithub = src: owner: repo: rev: hash:
     overrideHash (src.override { inherit owner repo rev; }) hash;
 
   overrideSource = p: owner: repo: rev: hash:
-    p.overrideAttrs (old: { src = overrideGithub old.src owner repo rev; });
+    p.overrideAttrs (old: {
+        src = overrideGithub old.src owner repo rev hash;
+    });
 in
 """
 
@@ -126,9 +128,9 @@ def prefetch_dep(name, owner, repo, rev, source_hash, dep):
 let
   flake = builtins.getFlake cwd;
   package = flake.packages.${builtins.currentSystem}."${name}";
-  newPackage = overrideSource package owner repo rev sourceHash;
+  deps = overrideSource package."${attribute}" owner repo rev sourceHash;
 in
-  overrideHash newPackage."${attribute}" ""
+  overrideHash deps ""
 """
 
     return nix_build(expr, {
@@ -147,6 +149,13 @@ def extract_dep_name(attr):
         return m.group(1)
     else:
         return None
+
+
+def open_output(path):
+    if path is not None:
+        return open(path, "w")
+    else:
+        return nullcontext(sys.stdout)
 
 
 def update(args):
@@ -175,12 +184,7 @@ def update(args):
         print(f"Updating {args.name} from {metadata['rev']} to {rev}")
         messages = commit_log(args.owner, args.repo, metadata["rev"], rev)
 
-        if args.write_commit_log is not None:
-            f = open(args.write_commit_log, "w")
-        else:
-            nullcontext(sys.stdout)
-
-        with f:
+        with open_output(args.write_commit_log) as f:
             f.writelines(f"- {m}\n" for m in messages)
 
     source_hash = prefetch_src(args.name, args.owner, args.repo, rev)
