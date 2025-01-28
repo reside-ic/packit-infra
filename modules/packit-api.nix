@@ -59,7 +59,7 @@ let
         type = types.port;
       };
       outpackServerUrl = lib.mkOption {
-        default = "http://localhost:8000";
+        default = "http://127.0.0.1:8000";
         type = types.str;
       };
 
