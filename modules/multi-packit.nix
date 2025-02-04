@@ -73,15 +73,19 @@ in
         management-port = ports."${name}".packit-api-management;
 
         apiRoot = "https://${cfg.domain}/${name}/packit/api";
-        outpackServerUrl = "http://localhost:${toString ports."${name}".outpack}";
+        outpackServerUrl = "http://127.0.0.1:${toString ports."${name}".outpack}";
         authentication = {
           github.redirect_url = "https://${cfg.domain}/${name}/redirect";
           service.audience = lib.mkIf (builtins.length config.authentication.service.policies > 0) "https://${cfg.domain}/${name}";
         };
         corsAllowedOrigins = [ "https://${cfg.domain}" ];
-        database.url = "jdbc:postgresql://localhost:5432/${name}?stringtype=unspecified";
-        database.user = name;
-        database.password = name;
+
+        database = {
+          url = "jdbc:postgresql://127.0.0.1:5432/${name}?stringtype=unspecified";
+          user = name;
+          password = name;
+        };
+
         environmentFiles = [
           "/var/secrets/packit/${name}/jwt-key"
         ] ++ lib.optionals (config.authentication.method == "github") [
@@ -134,21 +138,21 @@ in
 
         "^~ /${name}/packit/api/" = {
           priority = 999;
-          proxyPass = "http://localhost:${toString ports."${name}".packit-api}/";
+          proxyPass = "http://127.0.0.1:${toString ports."${name}".packit-api}/";
         };
       });
     };
 
     services.metrics-proxy.endpoints = foreachInstance (name: {
       "packit-api/${name}" = {
-        upstream = "http://localhost:${toString ports."${name}".packit-api-management}/prometheus";
+        upstream = "http://127.0.0.1:${toString ports."${name}".packit-api-management}/prometheus";
         labels = {
           job = "packit-api";
           project = name;
         };
       };
       "outpack_server/${name}" = {
-        upstream = "http://localhost:${toString ports."${name}".outpack}/metrics";
+        upstream = "http://127.0.0.1:${toString ports."${name}".outpack}/metrics";
         labels = {
           job = "outpack_server";
           project = name;
