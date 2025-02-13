@@ -76,7 +76,7 @@ in
 
         apiRoot = "https://${cfg.domain}/${name}/packit/api";
         outpackServerUrl = "http://127.0.0.1:${toString ports."${name}".outpack}";
-        orderlyRunnerApiUrl = "http://127.0.0.1:${toString config.services.orderly-runner.port}";
+        orderlyRunnerApiUrl = "http://127.0.0.1:${toString orderlyRunnerCfg.port}";
         authentication = {
           github.redirect_url = "https://${cfg.domain}/${name}/redirect";
           service.audience = lib.mkIf (builtins.length config.authentication.service.policies > 0) "https://${cfg.domain}/${name}";
