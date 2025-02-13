@@ -52,6 +52,8 @@
           grantedPermissions = [ "outpack.read" "outpack.write" ];
         }];
       };
+
+      runner.repositoryUrl = "https://github.com/mrc-ide/packit-infra-test-repo.git";
     };
 
     malariaverse-sitefiles = {
@@ -70,5 +72,10 @@
       };
       defaultRoles = [ "USER" ];
     };
+  };
+
+  services.orderly-runner = {
+    enable = true;
+    workers = 4;
   };
 }

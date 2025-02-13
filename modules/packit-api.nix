@@ -44,6 +44,8 @@ let
     };
   };
 
+  orderlyRunnerEnableDefault = config.services.orderly-runner.enable;
+
   instanceModule = { name, config, ... }: {
     options = {
       enable = lib.mkEnableOption "the Packit API server";
@@ -60,6 +62,10 @@ let
       };
       outpackServerUrl = lib.mkOption {
         default = "http://127.0.0.1:8000";
+        type = types.str;
+      };
+      orderlyRunnerApiUrl = lib.mkOption {
+        default = "http://127.0.0.1:8001";
         type = types.str;
       };
 
@@ -106,6 +112,19 @@ let
             type = types.listOf (lib.types.submodule policyModule);
             default = [ ];
           };
+        };
+      };
+
+      runner = rec {
+        enable = lib.mkOption {
+          description = "Enable instance to use orderly runners";
+          type = types.bool;
+          default = orderlyRunnerEnableDefault;
+        };
+        repositoryUrl = lib.mkOption {
+          description = "URL of an orderly repository";
+          type = types.str;
+          default = "";
         };
       };
 
@@ -192,10 +211,15 @@ in
         PACKIT_DEFAULT_ROLES = lib.concatStringsSep "," instanceCfg.defaultRoles;
         PACKIT_CORS_ALLOWED_ORIGINS = lib.concatStringsSep "," instanceCfg.corsAllowedOrigins;
         PACKIT_AUTH_METHOD = instanceCfg.authentication.method;
+        PACKIT_ORDERLY_RUNNER_ENABLED = if (instanceCfg.runner.enable && instanceCfg.runner.repositoryUrl != "") then "true" else "false";
       } // (lib.optionalAttrs (instanceCfg.authentication.method == "github") {
         PACKIT_AUTH_REDIRECT_URL = instanceCfg.authentication.github.redirect_url;
         PACKIT_AUTH_GITHUB_ORG = instanceCfg.authentication.github.org;
         PACKIT_AUTH_GITHUB_TEAM = instanceCfg.authentication.github.team;
+      }) // (lib.optionalAttrs (instanceCfg.runner.enable && instanceCfg.runner.repositoryUrl != "") {
+        PACKIT_ORDERLY_RUNNER_URL = instanceCfg.orderlyRunnerApiUrl;
+        PACKIT_ORDERLY_RUNNER_REPOSITORY_URL = instanceCfg.runner.repositoryUrl;
+        PACKIT_ORDERLY_RUNNER_LOCATION_URL = instanceCfg.outpackServerUrl;
       });
     };
   });

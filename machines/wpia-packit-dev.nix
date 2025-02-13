@@ -1,4 +1,3 @@
-{ pkgs, config, lib, self, ... }:
 {
   imports = [
     ./common/hardware-configuration.nix
@@ -27,5 +26,7 @@
         github.org = "reside-ic";
       };
     };
+
+    runner.repositoryUrl = "https://github.com/mrc-ide/packit-infra-test-repo.git";
   };
 }

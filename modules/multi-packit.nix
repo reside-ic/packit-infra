@@ -18,14 +18,15 @@ let
   '';
 
   # Ports get assigned sequentially, starting at 8000 for outpack, 8080 for
-  # packit-api, and 8160 for packit-api's management interface.
+  # packit-api, 8160 for packit-api's management interface and a single 
+  # orderly runner api at port 8240 for all the instances.
   ports = lib.listToAttrs (lib.imap0
     (idx: name: lib.nameValuePair name {
       outpack = 8000 + idx;
       packit-api = 8080 + idx;
       packit-api-management = 8160 + idx;
     })
-    cfg.instances);
+    cfg.instances) // { orderly-runner-api = config.services.orderly-runner.port; }; # 8240 by default
 in
 {
   options.services.multi-packit = {
@@ -74,6 +75,7 @@ in
 
         apiRoot = "https://${cfg.domain}/${name}/packit/api";
         outpackServerUrl = "http://127.0.0.1:${toString ports."${name}".outpack}";
+        orderlyRunnerApiUrl = "http://127.0.0.1:${toString ports.orderly-runner-api}";
         authentication = {
           github.redirect_url = "https://${cfg.domain}/${name}/redirect";
           service.audience = lib.mkIf (builtins.length config.authentication.service.policies > 0) "https://${cfg.domain}/${name}";
@@ -91,6 +93,7 @@ in
         ] ++ lib.optionals (config.authentication.method == "github") [
           cfg.githubOAuthSecret
         ];
+        properties."java.io.tmpdir" = "/var/tmp";
       });
     });
 
