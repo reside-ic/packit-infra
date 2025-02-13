@@ -29,4 +29,9 @@
 
     runner.repositoryUrl = "https://github.com/mrc-ide/packit-infra-test-repo.git";
   };
+
+  services.orderly-runner = {
+    enable = true;
+    workers = 1;
+  };
 }

@@ -3,6 +3,7 @@ let
   inherit (lib) types;
 
   cfg = config.services.multi-packit;
+  orderlyRunnerCfg = config.services.orderly-runner;
   foreachInstance = f: lib.mkMerge (lib.map f cfg.instances);
 
   landingPage = pkgs.runCommand "packit-index"
@@ -94,6 +95,12 @@ in
           cfg.githubOAuthSecret
         ];
         properties."java.io.tmpdir" = "/var/tmp";
+
+        # force disable if repositoryUrl not provided otherwise default to
+        # orderly runner enable value
+        runner.enable = if (!(config.runner ? repositoryUrl))
+          then lib.mkForce false
+          else lib.mkDefault orderlyRunnerCfg.enable;
       });
     });
 
