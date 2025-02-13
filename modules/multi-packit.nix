@@ -3,6 +3,7 @@ let
   inherit (lib) types;
 
   cfg = config.services.multi-packit;
+  orderlyRunnerCfg = config.services.orderly-runner;
   foreachInstance = f: lib.mkMerge (lib.map f cfg.instances);
 
   landingPage = pkgs.runCommand "packit-index"
@@ -18,7 +19,8 @@ let
   '';
 
   # Ports get assigned sequentially, starting at 8000 for outpack, 8080 for
-  # packit-api, and 8160 for packit-api's management interface.
+  # packit-api, 8160 for packit-api's management interface and a single 
+  # orderly runner api at port 8240 for all the instances.
   ports = lib.listToAttrs (lib.imap0
     (idx: name: lib.nameValuePair name {
       outpack = 8000 + idx;
@@ -74,6 +76,7 @@ in
 
         apiRoot = "https://${cfg.domain}/${name}/packit/api";
         outpackServerUrl = "http://127.0.0.1:${toString ports."${name}".outpack}";
+        orderlyRunnerApiUrl = "http://127.0.0.1:${toString orderlyRunnerCfg.port}";
         authentication = {
           github.redirect_url = "https://${cfg.domain}/${name}/redirect";
           service.audience = lib.mkIf (builtins.length config.authentication.service.policies > 0) "https://${cfg.domain}/${name}";

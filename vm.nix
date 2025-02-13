@@ -1,6 +1,7 @@
 { pkgs, lib, config, ... }:
 {
   virtualisation.memorySize = 2048;
+  virtualisation.diskSize = 16384;
   virtualisation.forwardPorts = [{
     from = "host";
     host.port = 8443;
