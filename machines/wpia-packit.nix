@@ -18,9 +18,9 @@
     enable = true;
     domain = "packit.dide.ic.ac.uk";
     instances = [
-      # "priority-pathogens"
+      "priority-pathogens"
       "reside"
-      # "malariaverse-sitefiles"
+      "malariaverse-sitefiles"
       "training"
     ];
   };
