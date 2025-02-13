@@ -122,7 +122,6 @@ let
         repositoryUrl = lib.mkOption {
           description = "URL of an orderly repository";
           type = types.str;
-          default = "";
         };
       };
 
@@ -214,7 +213,7 @@ in
         PACKIT_AUTH_REDIRECT_URL = instanceCfg.authentication.github.redirect_url;
         PACKIT_AUTH_GITHUB_ORG = instanceCfg.authentication.github.org;
         PACKIT_AUTH_GITHUB_TEAM = instanceCfg.authentication.github.team;
-      }) // (lib.optionalAttrs (instanceCfg.runner.enable) {
+      }) // (lib.optionalAttrs instanceCfg.runner.enable {
         PACKIT_ORDERLY_RUNNER_URL = instanceCfg.orderlyRunnerApiUrl;
         PACKIT_ORDERLY_RUNNER_REPOSITORY_URL = instanceCfg.runner.repositoryUrl;
         PACKIT_ORDERLY_RUNNER_LOCATION_URL = instanceCfg.outpackServerUrl;
