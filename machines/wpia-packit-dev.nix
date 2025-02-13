@@ -25,9 +25,8 @@
         method = "github";
         github.org = "reside-ic";
       };
+      runner.repositoryUrl = "https://github.com/mrc-ide/packit-infra-test-repo.git";
     };
-
-    runner.repositoryUrl = "https://github.com/mrc-ide/packit-infra-test-repo.git";
   };
 
   services.orderly-runner = {
