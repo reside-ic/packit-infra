@@ -1,4 +1,3 @@
-{ pkgs, config, lib, self, ... }:
 {
   imports = [
     ./common/hardware-configuration.nix
@@ -26,6 +25,15 @@
         method = "github";
         github.org = "reside-ic";
       };
+      runner = {
+        enable = true;
+        repositoryUrl = "https://github.com/reside-ic/packit-infra-test-repo.git";
+      };
     };
+  };
+
+  services.orderly-runner = {
+    enable = true;
+    workers = 1;
   };
 }

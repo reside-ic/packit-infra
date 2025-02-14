@@ -6,6 +6,7 @@
     ../../modules/vault.nix
     ../../modules/outpack.nix
     ../../modules/packit-api.nix
+    ../../modules/orderly-runner.nix
     ../../modules/metrics-proxy.nix
     ./tools.nix
     inputs.disko.nixosModules.disko

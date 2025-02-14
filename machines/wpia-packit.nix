@@ -52,6 +52,11 @@
           grantedPermissions = [ "outpack.read" "outpack.write" ];
         }];
       };
+
+      runner = {
+        enable = true;
+        repositoryUrl = "https://github.com/reside-ic/packit-infra-test-repo.git";
+      };
     };
 
     malariaverse-sitefiles = {
@@ -70,5 +75,10 @@
       };
       defaultRoles = [ "USER" ];
     };
+  };
+
+  services.orderly-runner = {
+    enable = true;
+    workers = 4;
   };
 }
