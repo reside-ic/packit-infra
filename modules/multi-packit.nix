@@ -27,7 +27,7 @@ let
       packit-api = 8080 + idx;
       packit-api-management = 8160 + idx;
     })
-    cfg.instances) // { orderly-runner-api = config.services.orderly-runner.port; }; # 8240 by default
+    cfg.instances);
 in
 {
   options.services.multi-packit = {
@@ -76,7 +76,7 @@ in
 
         apiRoot = "https://${cfg.domain}/${name}/packit/api";
         outpackServerUrl = "http://127.0.0.1:${toString ports."${name}".outpack}";
-        orderlyRunnerApiUrl = "http://127.0.0.1:${toString ports.orderly-runner-api}";
+        orderlyRunnerApiUrl = "http://127.0.0.1:${toString orderlyRunnerCfg.port}";
         authentication = {
           github.redirect_url = "https://${cfg.domain}/${name}/redirect";
           service.audience = lib.mkIf (builtins.length config.authentication.service.policies > 0) "https://${cfg.domain}/${name}";
@@ -94,13 +94,6 @@ in
         ] ++ lib.optionals (config.authentication.method == "github") [
           cfg.githubOAuthSecret
         ];
-        properties."java.io.tmpdir" = "/var/tmp";
-
-        # force disable if repositoryUrl not provided otherwise default to
-        # orderly runner enable value
-        runner.enable = if (!(config.runner ? repositoryUrl))
-          then lib.mkForce false
-          else lib.mkDefault orderlyRunnerCfg.enable;
       });
     });
 
