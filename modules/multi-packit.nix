@@ -133,8 +133,7 @@ in
 
         "~ ^/${name}(?<path>/.*)$" = {
           root = self'.packages.packit-app.override {
-            PUBLIC_URL = "/${name}";
-            PACKIT_NAMESPACE = name;
+            SUB_URL_DEPTH = 1;
           };
           tryFiles = "$path /index.html =404";
         };

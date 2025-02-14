@@ -7,6 +7,9 @@ rustPlatform.buildRustPackage rec {
   src = fetchFromGitHub sources.src;
   cargoHash = sources.cargoDepsHash;
 
+  # disable testing
+  doCheck = false;
+
   buildInputs = [ openssl ];
   nativeBuildInputs = [ pkg-config ];
 

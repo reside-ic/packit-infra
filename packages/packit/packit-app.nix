@@ -1,8 +1,7 @@
 { fetchFromGitHub
 , buildNpmPackage
 , lib
-, PUBLIC_URL ? null
-, PACKIT_NAMESPACE ? null
+, SUB_URL_DEPTH ? null
 }:
 let
   sources = lib.importJSON ./sources.json;
@@ -19,6 +18,5 @@ buildNpmPackage rec {
     runHook postInstall
   '';
 
-  inherit PUBLIC_URL;
-  REACT_APP_PACKIT_NAMESPACE = PACKIT_NAMESPACE;
+  inherit SUB_URL_DEPTH;
 }
