@@ -11,7 +11,7 @@
 set -eu
 
 if [[ $# != 1 && $# != 2 ]]; then
-  hostnames=$(nix eval --quiet --raw ".#nixosConfigurations" --apply 'x: builtins.concatStringsSep ", " (builtins.attrNames x)')
+  hostnames=$(jq -r 'keys.[] | join(",")' $NIXOS_CONFIGURATIONS)
   cat >&2 <<EOF
 Usage: $0 hostname [switch|boot|test|dry-activate]
 Valid hostnames: $hostnames
@@ -27,13 +27,11 @@ EOF
   exit 1
 fi
 
-printf "Evaluating system configuration...\n"
-
 host="$1"
 action="${2-switch}"
-data=$(nix eval ".#nixosConfigurations.$host" --json --apply 'm: { fqdn = m.config.networking.fqdn; drv = m.config.system.build.toplevel.drvPath; }')
-fqdn=$(echo "$data" | jq -r .fqdn)
-drv=$(echo "$data" | jq -r .drv)
+
+fqdn=$(jq --arg host "$host" -r '.[$host].fqdn' $NIXOS_CONFIGURATIONS)
+drv=$(jq --arg host "$host" -r '.[$host].drvPath' $NIXOS_CONFIGURATIONS)
 
 printf "Building system configuration for %s...\n" "$fqdn"
 target=$(nix-store --realise "$drv")
@@ -44,7 +42,7 @@ nix-copy-closure --use-substitutes --to "root@$fqdn" "$drv" "$target"
 
 printf "Activating system configuration...\n"
 
-# It is a bit annoting that we need to interpret $action, and that we are
+# It is a bit annoying that we need to interpret $action, and that we are
 # reponsible both for switching profiles and for activating the configuration.
 #
 # At some point NixOS may gain a high-level script that does all this for us:

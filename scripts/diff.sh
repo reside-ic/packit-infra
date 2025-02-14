@@ -11,7 +11,7 @@
 set -eu
 
 if [[ $# -lt 1 ]]; then
-  hostnames=$(nix eval --quiet --raw ".#nixosConfigurations" --apply 'x: builtins.concatStringsSep ", " (builtins.attrNames x)')
+  hostnames=$(jq -r 'keys.[] | join(",")' $NIXOS_CONFIGURATIONS)
   cat >&2 <<EOF
 Usage: $0 hostname
 Valid hostnames: $hostnames
@@ -22,9 +22,9 @@ EOF
 fi
 
 host="$1"
-data=$(nix eval ".#nixosConfigurations.$host" --json --apply 'm: { fqdn = m.config.networking.fqdn; drv = m.config.system.build.toplevel.drvPath; }')
-fqdn=$(echo "$data" | jq -r .fqdn)
-target=$(echo "$data" | jq -r .drv)
+
+fqdn=$(jq --arg host "$host" -r '.[$host].fqdn' $NIXOS_CONFIGURATIONS)
+target=$(jq --arg host "$host" -r '.[$host].drvPath' $NIXOS_CONFIGURATIONS)
 
 current=$(ssh "root@$fqdn" nix path-info --derivation /run/current-system)
 nix-copy-closure --from "root@$fqdn" "$current"
