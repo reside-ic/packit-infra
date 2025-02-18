@@ -1,7 +1,7 @@
 set -eu
 
 if [[ $# -lt 1 ]]; then
-  hostnames=$(jq -r 'keys.[] | join(",")' $VM_CONFIGURATIONS)
+  hostnames=$(jq -r 'keys | join(", ")' $VM_CONFIGURATIONS)
   cat >&2 <<EOF
 Usage: $0 hostname ...
 Valid hostnames: $hostnames

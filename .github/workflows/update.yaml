@@ -91,11 +91,11 @@ jobs:
             You can deploy this pull request by running the following command:
 
             ```sh
-            nix run "github:${{ github.repository }}?ref=refs/pull/${{ steps.create-pr.outputs.pull-request-number }}/merge#deploy" <hostname>
+            nix run --refresh "github:${{ github.repository }}?ref=refs/pull/${{ steps.create-pr.outputs.pull-request-number }}/merge#deploy" <hostname>
             ```
 
             After merging this pull request, you must deploy the ${{ github.event.repository.default_branch }} branch to each host by running the following command:
 
             ```sh
-            nix run "github:${{ github.repository }}#deploy" <hostname>
+            nix run --refresh "github:${{ github.repository }}#deploy" <hostname>
             ```
