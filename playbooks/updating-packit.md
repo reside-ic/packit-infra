@@ -56,7 +56,7 @@ nix flake check -L
 [^workflow-loop]: Presumably, this is to avoid an infinite cycle of a workflow
     triggering itself.
 
-## 3. Deploy the pull request to wpia-packit-dev
+## 3. Deploy the pull request to `wpia-packit-dev`
 
 The `wpia-packit-dev` machine can be used as a staging environment to deploy
 new versions of Packit. Run the following command, replacing `<pr number>` with
@@ -79,7 +79,7 @@ directory), eg:
 nix run ".#deploy" wpia-packit-dev
 ```
 
-## 4. Verify that wpia-packit-dev works as expected
+## 4. Verify that `packit-dev` works as expected
 
 The things to look out for will depend on what changes the update carried. If
 the update includes a particular new features, you should focus on checking
@@ -89,7 +89,7 @@ The steps below are only suggestions, and may be slightly out of date if and
 when changes are made to the interface.
 
 - Visit <https://packit-dev.dide.ic.ac.uk>
-    - You should see a list of instances, with just `packit-dev` listed.
+- You should see a list of instances, with a single entry, `packit-dev`.
 - Follow the link to the `reside-dev` instance and log in using GitHub.
 - The home page should have a list of available packet groups, with at least a handful of entries.
 - Click on one of the packet groups to view the list of packets.

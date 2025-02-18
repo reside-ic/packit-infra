@@ -37,7 +37,7 @@ typing the name of a unit[^unit] and press TAB to see suggestions.
 
 [systemctl]: https://www.freedesktop.org/software/systemd/man/latest/systemctl.html
 [^unit]: A systemd "unit" is a generalization of a service. Units include
-    services buts also timers, sockets, mount points, etc.
+    services but also timers, sockets, mount points, etc.
 
 ## How do I check a service's logs?
 
@@ -74,9 +74,9 @@ Usually you'll instead be interested in recent logs:
 > If doing this on the production instance, start by thinking very carefully
 > about what you are about to do.
 
-The `psql` tool to get an SQL session to the database of your choice. Each
-Packit instance uses its own database. The root Linux user has permissions to
-access any of them.
+The `psql` command can be used to get an SQL session to the database of your
+choice. Each Packit instance uses its own database. The root Linux user has
+permissions to access any of them.
 
 ```sh
 $ psql <instance>
