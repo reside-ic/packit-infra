@@ -3,21 +3,37 @@ let
   inherit (lib) types;
   imageJson = lib.importJSON ../packages/orderly-runner/image.json;
 
+  runnerImage = "${imageJson.finalImageName}:${imageJson.finalImageTag}";
+
+  REDIS_URL = "redis://localhost";
+  ORDERLY_RUNNER_QUEUE_ID = "orderly.runner.queue";
+
   getOrderlyRunnerContainer = { name, cmdFlags, entrypoint }: {
     "${name}" = {
       imageFile = pkgs.dockerTools.pullImage imageJson;
-      image = "${imageJson.finalImageName}:${imageJson.finalImageTag}";
+      image = runnerImage;
       extraOptions = [ "--network=host" "--pull=never" ];
-      environment = {
-        REDIS_URL = "redis://localhost";
-        ORDERLY_RUNNER_QUEUE_ID = "orderly.runner.queue";
-      };
+      environment = { inherit REDIS_URL ORDERLY_RUNNER_QUEUE_ID; };
       entrypoint = entrypoint;
       cmd = [ "/data" ] ++ cmdFlags;
       serviceName = name;
       volumes = [ "logs-volume:/logs" ];
     };
   };
+
+  rprofile = pkgs.writeText ".Rprofile" ''
+    library(rrq)
+    rrq_default_controller_set(rrq_controller(Sys.getenv("ORDERLY_RUNNER_QUEUE_ID")))
+  '';
+
+  runner-cli = pkgs.writeShellScriptBin "runner-cli" ''
+    exec "${lib.getExe config.virtualisation.podman.package}" run --network=host --pull=never \
+      --volume "${rprofile}:/root/.Rprofile:ro" \
+      --env "ORDERLY_RUNNER_QUEUE_ID=${ORDERLY_RUNNER_QUEUE_ID}" \
+      --env "REDIS_URL=${REDIS_URL}" \
+      --rm --tty --interactive \
+      "${runnerImage}" R "$@"
+  '';
 in
 {
   options.services.orderly-runner = {
@@ -50,5 +66,9 @@ in
           entrypoint = "/usr/local/bin/orderly.runner.worker";
         }
       ) config.services.orderly-runner.workers);
+
+    environment.systemPackages = [
+      runner-cli
+    ];
   };
 }
