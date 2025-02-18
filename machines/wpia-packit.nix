@@ -45,12 +45,20 @@
         method = "github";
         github.org = "reside-ic";
 
-        service.policies = [{
-          issuer = "https://token.actions.githubusercontent.com";
-          jwkSetUri = "https://token.actions.githubusercontent.com/.well-known/jwks";
-          requiredClaims.repository = "mrc-ide/orderly-action";
-          grantedPermissions = [ "outpack.read" "outpack.write" ];
-        }];
+        service.policies = [
+          {
+            issuer = "https://token.actions.githubusercontent.com";
+            jwkSetUri = "https://token.actions.githubusercontent.com/.well-known/jwks";
+            requiredClaims.repository = "mrc-ide/orderly-action";
+            grantedPermissions = [ "outpack.read" "outpack.write" ];
+          }
+          {
+            issuer = "https://token.actions.githubusercontent.com";
+            jwkSetUri = "https://token.actions.githubusercontent.com/.well-known/jwks";
+            requiredClaims.repository = "reside-ic/packit-infra-test-repo";
+            grantedPermissions = [ "outpack.read" "outpack.write" "packet.run" ];
+          }
+        ];
       };
 
       runner = {
