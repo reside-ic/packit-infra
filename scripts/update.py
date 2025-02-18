@@ -35,7 +35,7 @@ let
 in
 """
 
-SUPPORTED_DEPS = {"gradle", "cargo", "npm"}
+SUPPORTED_DEPS = {"gradle", "npm"}
 
 
 def github_api(path):
