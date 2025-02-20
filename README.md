@@ -10,6 +10,8 @@ curl --proto '=https' --tlsv1.2 -sSf -L https://install.determinate.systems/nix 
 ```
 
 ## Standard operating procedures
+- [Updating to a new version of Packit / outpack_server](playbooks/updating-packit.md)
+- [Debugging an existing machine](playbooks/debugging.md)
 - [Provisioning a new machine](playbooks/new-machine-provisioning.md)
 - [Deploying a new instance](playbooks/new-packit-instance.md)
 - [Wiping a Packit instance](playbooks/wipe-packit-instance.md)
@@ -21,29 +23,7 @@ curl --proto '=https' --tlsv1.2 -sSf -L https://install.determinate.systems/nix 
 nix run .#deploy <hostname>
 ```
 
-Where `<hostname>` is replaced by `wpia-packit` or `wpia-packit-private`.
-
-### How do I update outpack_server or Packit?
-
-The Git revision of outpack_server and packit is pinned in JSON files found in
-the [`packages/` directory](packages). These files also locks the packages'
-dependencies.
-
-A [GitHub actions workflow](.github/workflows/update.yaml) runs nightly and
-creates (or updates) a pull request to update outpack_server and Packit to
-their latest revision. If necessary, the workflow can also be triggered
-manually, in which case an alternative branch may be specified.
-
-After merging the pull request created by the workflow, you should re-deploy to
-all hosts following the instructions above.
-
-Equivalently, you may update the versions manually yourself by running either
-of the following commands:
-
-```
-nix run .#update outpack_server
-nix run .#update packit
-```
+Where `<hostname>` is replaced by `wpia-packit`, `wpia-packit-dev` or `wpia-packit-private`.
 
 ### How do I build the deployment?
 
@@ -168,24 +148,6 @@ nix run .#nixosConfigurations.<hostname>.config.vault.tool -- --root here
 
 This will fetch all the secrets as the command on the server would have done,
 but store them relative to the `here` folder.
-
-### How do I inspect / edit the database?
-
-If doing this on the production instance, start by thinking very carefully
-about what you are about to do.
-
-From the VM console or an SSH session, you can use the `psql` tool to get an
-SQL session to the database of your choice. Each Packit instance uses its own
-database. The root Linux user has permissions to access any of them.
-
-```sh
-psql <instance>
-=# SELECT * FROM "user";
-```
-
-The database is initially populated by the packit-api service. During the first
-start of a new instance, it can take a minute for the service to start and for
-the database's tables to exist.
 
 ### How do I update NixOS?
 

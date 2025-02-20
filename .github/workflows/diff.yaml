@@ -12,7 +12,6 @@ jobs:
         with:
           fetch-depth: 0
       - uses: DeterminateSystems/nix-installer-action@main
-      - uses: DeterminateSystems/magic-nix-cache-action@main
       - name: Run nix-diff
         run: |
           hostnames=$(nix eval --raw ".#nixosConfigurations" --apply 'x: builtins.concatStringsSep " " (builtins.attrNames x)')

@@ -41,7 +41,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: DeterminateSystems/nix-installer-action@main
-      - uses: DeterminateSystems/magic-nix-cache-action@main
 
       - name: Update outpack_server
         run: nix run .#update outpack_server -- --ref ${{ inputs.outpack_server || 'HEAD' }} --write-commit-log ${{ runner.temp }}/outpack_server.md
@@ -88,14 +87,18 @@ jobs:
         with:
           pr-number: ${{ steps.create-pr.outputs.pull-request-number }}
           message: |
-            You can deploy this pull request by running the following command:
+            You can deploy this pull request to `wpia-packit-dev` by running the following command:
 
             ```sh
-            nix run --refresh "github:${{ github.repository }}?ref=refs/pull/${{ steps.create-pr.outputs.pull-request-number }}/merge#deploy" <hostname>
+            nix run --refresh "github:${{ github.repository }}?ref=refs/pull/${{ steps.create-pr.outputs.pull-request-number }}/merge#deploy" wpia-packit-dev
             ```
 
-            After merging this pull request, you must deploy the ${{ github.event.repository.default_branch }} branch to each host by running the following command:
+            After merging this pull request, you must deploy the `${{ github.event.repository.default_branch }}` branch to each host by running the following command:
 
             ```sh
             nix run --refresh "github:${{ github.repository }}#deploy" <hostname>
             ```
+
+            See the ["Updating Packit"][playbook] for more details on what to do with this pull request.
+
+            [playbook]: https://github.com/reside-ic/packit-infra/blob/main/playbooks/updating-packit.md
