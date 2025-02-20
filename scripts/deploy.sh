@@ -11,7 +11,7 @@
 set -eu
 
 if [[ $# != 1 && $# != 2 ]]; then
-  hostnames=$(jq -r 'keys.[] | join(",")' $NIXOS_CONFIGURATIONS)
+  hostnames=$(jq -r 'keys | join(", ")' $NIXOS_CONFIGURATIONS)
   cat >&2 <<EOF
 Usage: $0 hostname [switch|boot|test|dry-activate]
 Valid hostnames: $hostnames
