@@ -41,7 +41,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: DeterminateSystems/nix-installer-action@main
-      - uses: DeterminateSystems/magic-nix-cache-action@main
 
       - name: Update outpack_server
         run: nix run .#update outpack_server -- --ref ${{ inputs.outpack_server || 'HEAD' }} --write-commit-log ${{ runner.temp }}/outpack_server.md
