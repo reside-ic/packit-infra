@@ -10,6 +10,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: nixbuild/nix-quick-install-action@v27
+        with:
+          extra_nix_config: "system-features = kvm"
+
       - uses: nix-community/cache-nix-action@v6
         with:
           primary-key: nix-${{ runner.os }}

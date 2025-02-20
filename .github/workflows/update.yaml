@@ -37,9 +37,12 @@ jobs:
     permissions:
       pull-requests: write
       contents: write
+      actions: write
 
     steps:
       - uses: actions/checkout@v4
+
+
       - uses: DeterminateSystems/nix-installer-action@main
 
       - name: Update outpack_server
