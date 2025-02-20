@@ -63,6 +63,7 @@ Usually you'll instead be interested in recent logs:
 - `--pager-end` / `-e` skips to the bottom of the logs.
 - `--reverse` / `-r` shows the logs in reverse order, ie. most recent first.
 - `--boot` / `-b` shows logs since the last reboot of the machine.
+- `--follow` / `-f` waits and prints new log lines as they get produced.
 - `--grep=PATTERN` only show lines where the message matches the given regular
     expression.
 
