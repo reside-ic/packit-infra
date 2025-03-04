@@ -5,7 +5,7 @@ in
 rustPlatform.buildRustPackage rec {
   name = "outpack_server";
   src = fetchFromGitHub sources.src;
-  cargoHash = sources.cargoDepsHash;
+  cargoLock.lockFile = "${src}/Cargo.lock";
 
   buildInputs = [ openssl ];
   nativeBuildInputs = [ pkg-config ];
