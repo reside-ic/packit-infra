@@ -21,7 +21,8 @@ jobs:
       - uses: nixbuild/nix-quick-install-action@v27
       - uses: nix-community/cache-nix-action@v6
         with:
-          primary-key: nix-${{ runner.os }}
+          primary-key: nix-${{ runner.os }}-${{ github.sha }}
+          restore-prefixes-first-match: nix-${{ runner.os }}-
 
       - run: |
           hostnames=$(nix eval --raw ".#nixosConfigurations" --apply 'x: builtins.concatStringsSep " " (builtins.attrNames x)')
