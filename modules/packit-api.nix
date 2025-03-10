@@ -183,7 +183,7 @@ in
       after = [ "postgresql.service" ];
 
       serviceConfig = {
-        Type = "simple";
+        Type = "notify";
         DynamicUser = true;
         ProtectSystem = true;
 
