@@ -1,4 +1,4 @@
-{ pkgs, config, inputs, ... }:
+{ config, ... }:
 {
   services.nginx.enable = true;
   services.postgresql = {
@@ -34,15 +34,6 @@
       labels.job = "machine-metrics";
     };
   };
-
-  environment.etc."metrics/static-metrics.prom".text =
-    let
-      inherit (inputs) self;
-      rev = self.rev or self.dirtyRev or "unknown";
-    in
-    ''
-      nixos_configuration_info{revision="${rev}"} 1
-    '';
 
   services.prometheus.exporters = {
     node = {

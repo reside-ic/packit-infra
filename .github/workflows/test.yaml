@@ -35,3 +35,29 @@ jobs:
           done
 
       - run: nix flake check -L
+
+      - name: Build repository metrics
+        run: nix build .#repository-metrics --out-link ${{ runner.temp }}/metrics
+      - name: Save repository metrics as an artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: ${{ runner.temp }}/metrics
+
+  # We deploy metrics about the build to GitHub pages, so it can be scraped our
+  # Prometheus. The metrics always get built, but we only actually publish them
+  # on main branch builds.
+  deploy-metrics:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    needs: build
+    permissions:
+      pages: write
+      id-token: write
+
+    environment:
+      name: github-pages
+
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

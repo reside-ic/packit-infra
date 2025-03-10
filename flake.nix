@@ -27,6 +27,13 @@
           pkgs.nix-diff
         ];
       };
+
+      # This gets published to GitHub pages for Prometheus to scrape.
+      packages.repository-metrics = pkgs.concatTextFile {
+        name = "repository-metrics";
+        files = lib.mapAttrsToList (_: c: c.config.system.build.sourceInfoMetrics or null) self.nixosConfigurations;
+        destination = "/metrics";
+      };
     };
 
     systems = [ "x86_64-linux" ];
