@@ -10,8 +10,7 @@
 
   vault.secrets.github-oauth.key = "packit/oauth/private";
 
-  services.multi-packit = {
-    enable = true;
+  services.packit = {
     enableACME = true;
     domain = "packit-private.dide.ic.ac.uk";
     instances = [ "kipling" ];

@@ -10,8 +10,7 @@
 
   vault.secrets.github-oauth.key = "packit/oauth/production";
 
-  services.multi-packit = {
-    enable = true;
+  services.packit = {
     enableACME = true;
     domain = "packit.dide.ic.ac.uk";
     instances = [

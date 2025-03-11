@@ -14,8 +14,7 @@ pkgs.testers.runNixOSTest {
       ../../vm.nix
     ];
 
-    services.multi-packit = {
-      enable = true;
+    services.packit = {
       instances = [ "reside" ];
     };
 

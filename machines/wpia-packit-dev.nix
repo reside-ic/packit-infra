@@ -10,8 +10,7 @@
 
   vault.secrets."github-oauth".key = "packit/oauth/dev";
 
-  services.multi-packit = {
-    enable = true;
+  services.packit = {
     enableACME = true;
     domain = "packit-dev.dide.ic.ac.uk";
     instances = [ "reside-dev" ];

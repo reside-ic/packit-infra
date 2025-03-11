@@ -15,7 +15,7 @@
     '';
   };
 
-  services.multi-packit = {
+  services.packit = {
     githubOAuthSecret = "/var/secrets/github-oauth";
   };
 
@@ -28,7 +28,7 @@
 
   services.metrics-proxy = {
     enable = true;
-    domain = config.services.multi-packit.domain;
+    domain = config.services.packit.domain;
     endpoints."node_exporter" = {
       upstream = "http://127.0.0.1:${toString config.services.prometheus.exporters.node.port}/metrics";
       labels.job = "machine-metrics";

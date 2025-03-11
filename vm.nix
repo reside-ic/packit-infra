@@ -9,7 +9,7 @@
   }];
   virtualisation.graphics = false;
 
-  services.multi-packit = {
+  services.packit = {
     domain = lib.mkForce "localhost:8443";
 
     # Never use ACME on local VMs. We use self-signed certificates instead,
@@ -30,13 +30,13 @@
   };
 
   users.motd = ''
-    Server is available at https://${config.services.multi-packit.domain}.
+    Server is available at https://${config.services.packit.domain}.
     Use the 'Ctrl-A x' sequence or the `shutdown now` command to terminate the VM session.
   '';
 
   systemd.services."generate-secrets" =
     let
-      packit-units = map (name: "packit-api-${name}.service") config.services.multi-packit.instances;
+      packit-units = map (name: "packit-api-${name}.service") config.services.packit.instances;
     in
     {
       wants = [ "network-online.target" ];
