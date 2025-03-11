@@ -16,20 +16,14 @@
   };
 
   services.multi-packit = {
-    sslCertificate = "/var/secrets/packit.cert";
-    sslCertificateKey = "/var/secrets/packit.key";
     githubOAuthSecret = "/var/secrets/github-oauth";
   };
 
-  vault.secrets = {
-    ssl-certificate.path = "/var/secrets/packit.cert";
-    ssl-key.path = "/var/secrets/packit.key";
-    github-oauth = {
-      path = "/var/secrets/github-oauth";
-      fields.PACKIT_GITHUB_CLIENT_ID = "clientId";
-      fields.PACKIT_GITHUB_CLIENT_SECRET = "clientSecret";
-      format = "env";
-    };
+  vault.secrets.github-oauth = {
+    path = "/var/secrets/github-oauth";
+    format = "env";
+    fields.PACKIT_GITHUB_CLIENT_ID = "clientId";
+    fields.PACKIT_GITHUB_CLIENT_SECRET = "clientSecret";
   };
 
   services.metrics-proxy = {

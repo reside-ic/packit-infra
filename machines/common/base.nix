@@ -8,6 +8,7 @@
     ../../modules/packit-api.nix
     ../../modules/orderly-runner.nix
     ../../modules/metrics-proxy.nix
+    ./acme.nix
     ./tools.nix
     inputs.disko.nixosModules.disko
   ];

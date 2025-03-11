@@ -36,6 +36,11 @@ in
       description = "the domain name on which the service is hosted";
       type = types.str;
     };
+    enableACME = lib.mkOption {
+      description = "Obtain certificates from Let's Encrypt";
+      type = types.bool;
+      default = false;
+    };
     sslCertificate = lib.mkOption {
       type = types.path;
     };
@@ -123,7 +128,13 @@ in
         absolute_redirect OFF;
       '';
 
-      inherit (cfg) sslCertificate sslCertificateKey;
+      enableACME = cfg.enableACME;
+      # By default nginx will enable the http challenge and try to host
+      # challenges under `/.well-known`. Set to null to not do that.
+      acmeRoot = null;
+
+      sslCertificate = lib.mkIf (!cfg.enableACME) cfg.sslCertificate;
+      sslCertificateKey = lib.mkIf (!cfg.enableACME) cfg.sslCertificateKey;
 
       root = landingPage;
       locations = foreachInstance (name: {
