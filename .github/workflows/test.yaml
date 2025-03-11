@@ -23,6 +23,9 @@ jobs:
         with:
           primary-key: nix-${{ runner.os }}-${{ github.sha }}
           restore-prefixes-first-match: nix-${{ runner.os }}-
+          # Only save the cache for pushes to main. This avoids blowing up the
+          # cache allowance with PR builds.
+          save: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
 
       - run: |
           hostnames=$(nix eval --raw ".#nixosConfigurations" --apply 'x: builtins.concatStringsSep " " (builtins.attrNames x)')
