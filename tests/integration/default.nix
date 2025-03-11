@@ -16,9 +16,6 @@ pkgs.testers.runNixOSTest {
 
     services.multi-packit = {
       enable = true;
-      sslCertificate = "/var/secrets/packit.cert";
-      sslCertificateKey = "/var/secrets/packit.key";
-      githubOAuthSecret = "/var/secrets/github-oauth";
       instances = [ "reside" ];
     };
 

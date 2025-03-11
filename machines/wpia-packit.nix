@@ -9,14 +9,22 @@
   networking.hostName = "wpia-packit";
 
   vault.secrets = {
-    "ssl-certificate".key = "packit/ssl/production/cert";
-    "ssl-key".key = "packit/ssl/production/key";
-    "github-oauth".key = "packit/oauth/production";
+    github-oauth.key = "packit/oauth/production";
+    ssl-certificate = {
+      path = "/var/secrets/packit.cert";
+      key = "packit/ssl/production/cert";
+    };
+    ssl-key = {
+      path = "/var/secrets/packit.key";
+      key = "packit/ssl/production/key";
+    };
   };
 
   services.multi-packit = {
     enable = true;
     domain = "packit.dide.ic.ac.uk";
+    sslCertificate = "/var/secrets/packit.cert";
+    sslCertificateKey = "/var/secrets/packit.key";
     instances = [
       "priority-pathogens"
       "reside"

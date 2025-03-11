@@ -11,6 +11,12 @@
 
   services.multi-packit = {
     domain = lib.mkForce "localhost:8443";
+
+    # Never use ACME on local VMs. We use self-signed certificates instead,
+    # see below for the generation.
+    enableACME = lib.mkForce false;
+    sslCertificate = lib.mkForce "/var/secrets/packit.cert";
+    sslCertificateKey = lib.mkForce "/var/secrets/packit.key";
   };
 
   vault.secrets = lib.mkForce {
