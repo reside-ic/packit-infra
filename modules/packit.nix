@@ -14,25 +14,18 @@ let
   cfg = config.services.packit;
   orderlyRunnerCfg = config.services.orderly-runner;
 
-  buildJinjaTemplate = { name, destination ? "", template, data }: pkgs.runCommand name
+  landingPage = pkgs.runCommand "packit-index"
     {
       nativeBuildInputs = [ pkgs.jinja2-cli ];
-      data = pkgs.writers.writeJSON "values.json" data;
-      inherit template;
-    } ''
-    target=$out${lib.escapeShellArg destination}
-    mkdir -p "$(dirname "$target")"
-    jinja2 $template $data > $target
-  '';
-
-  landingPage = buildJinjaTemplate {
-    name = "packit-index";
-    destination = "/index.html";
-    template = ../index.html.jinja;
-    data = {
-      inherit (cfg) domain instances;
-    };
-  };
+      template = ../index.html.jinja;
+      data = pkgs.writers.writeJSON "values.json" {
+        inherit (cfg) domain instances;
+      };
+    }
+    ''
+      mkdir -p $out
+      jinja2 $template $data > $out/index.html
+    '';
 
   # Ports get assigned sequentially, starting at 8000 for outpack, 8080 for
   # packit-api, 8160 for packit-api's management interface and a single 
@@ -45,7 +38,9 @@ let
     })
     cfg.instances);
 
-  # TODO: explain this.
+  # `cfg.domain` may include a port, which we need to remove when configuring
+  # nginx. In practice this only includes a port when running as a local VM,
+  # where the server is exposed on the host as 8433.
   serverName = lib.head (lib.splitString ":" cfg.domain);
 
   commonVhostConfig = {
@@ -88,7 +83,7 @@ let
       orderlyRunnerApiUrl = "http://127.0.0.1:${toString orderlyRunnerCfg.port}";
       authentication = {
         github.redirect_url = "https://${name}.${cfg.domain}/redirect";
-        service.audience = lib.mkIf (builtins.length config.authentication.service.policies > 0) "https://${name}.${cfg.domain}";
+        service.audience = lib.mkIf (lib.length config.authentication.service.policies > 0) "https://${name}.${cfg.domain}";
       };
       corsAllowedOrigins = [ "https://${name}.${cfg.domain}" ];
 
@@ -166,12 +161,43 @@ let
     };
   };
 
-  # TODO: clean this up / explain what the hell it is for.
-  mkMergeNested = keys: entries:
+  globalConfig = lib.mkIf (cfg.instances != [ ]) {
+    services.nginx.virtualHosts."${serverName}" = commonVhostConfig // {
+      root = landingPage;
+    };
+  };
+
+  # Ideally we would want to merge the configuration of each instance using
+  # something like:
+  #
+  # config = lib.mkMerge (map perInstanceConfig config.services.packit.instances);
+  #
+  # Unfortunately this creates an infinite recursion: to construct the argument
+  # to `mkMerge` we need to evaluate `config.services.packit.instances`, which
+  # forces the evaluation of the top-level of the configuration, which needs to
+  # evaluate `mkMerge`, which evaluates its arguments, etc..
+  #
+  # The workaround is to push the `mkMerge` deeper into the definition:
+  #
+  # config =
+  #   let entries = (map perInstanceConfig config.services.packit.instances);
+  #   in {
+  #     systemd.services = lib.mkMerge (map (e: e.systemd.services) entries);
+  #     services.packit-api = lib.mkMerge (map (e: e.services.packit-api) entries)
+  #     ...
+  #   };
+  #
+  # Crucially, this does not overlap with `services.packit.instances`, breaking
+  # the cycle. Writing the full expansion is a bit tedious, so `mkNestedMerges`
+  # does it instead.
+  #
+  # Inspired by https://gist.github.com/udf/4d9301bdc02ab38439fd64fbda06ea43.
+  mkNestedMerges = paths: entries:
     let
-      valuesFor = k: map (e: lib.attrByPath k { } e) entries;
-      mergedValueFor = k: lib.mkMerge (valuesFor k);
-      updates = map (k: { path = k; update = _: mergedValueFor k; }) keys;
+      unset = lib.mkIf false (throw "unexpected");
+      valuesForPath = p: map (e: lib.attrByPath p unset e) entries;
+      mergedValueForPath = p: lib.mkMerge (valuesForPath p);
+      updates = map (p: { path = p; update = lib.const (mergedValueForPath p); }) paths;
     in
     lib.updateManyAttrsByPath updates { };
 
@@ -186,13 +212,7 @@ let
         [ "systemd" "services" ]
       ];
     in
-    mkMergeNested paths (lib.map perInstanceConfig cfg.instances);
-
-  globalConfig = lib.mkIf (cfg.instances != [ ]) {
-    services.nginx.virtualHosts."${serverName}" = commonVhostConfig // {
-      root = landingPage;
-    };
-  };
+    mkNestedMerges paths (lib.map perInstanceConfig cfg.instances);
 in
 {
   options.services.packit = {
