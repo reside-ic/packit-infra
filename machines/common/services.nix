@@ -1,6 +1,20 @@
 { config, ... }:
 {
-  services.nginx.enable = true;
+  services.nginx = {
+    enable = true;
+
+    # Set a catch-all vhost to reject any unknown domains.
+    # HTTP connections get a 400 and HTTPS connections get an early TLS error.
+    virtualHosts."default" = {
+      serverName = "_";
+      default = true;
+      rejectSSL = true;
+      locations."/" = {
+        return = "400 \"Site does not exist\"";
+      };
+    };
+  };
+
   services.postgresql = {
     enable = true;
     ensureUsers = [{
