@@ -78,7 +78,7 @@ let
 
   configurationInfoMetrics = pkgs.runCommand "${hostname}-configuration-info.prom" { } ''
     cat > $out <<EOF
-    nixos_configuration_info{hostname="${hostname}", revision="${rev}", narHash="$(cat ${systemHash})"}
+    nixos_configuration_info{hostname="${hostname}", revision="${rev}", narHash="$(cat ${systemHash})"} 1
     EOF
   '';
 in
