@@ -138,7 +138,7 @@ let
           proxyPass = "http://127.0.0.1:${toString ports."${name}".packit-api}/";
         };
         "~ ^/${name}(?<path>/[^\\r\\n]*)$" = {
-          return = "307 https://${name}.${cfg.domain}$path";
+          return = "301 https://${name}.${cfg.domain}$path";
         };
       };
     };
