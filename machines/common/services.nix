@@ -1,6 +1,20 @@
 { config, ... }:
 {
-  services.nginx.enable = true;
+  services.nginx = {
+    enable = true;
+
+    # Set a catch-all vhost to reject any unknown domains.
+    # HTTP connections get a 400 and HTTPS connections get an early TLS error.
+    virtualHosts."default" = {
+      serverName = "_";
+      default = true;
+      rejectSSL = true;
+      locations."/" = {
+        return = "400 \"Site does not exist\"";
+      };
+    };
+  };
+
   services.postgresql = {
     enable = true;
     ensureUsers = [{
@@ -15,7 +29,7 @@
     '';
   };
 
-  services.multi-packit = {
+  services.packit = {
     githubOAuthSecret = "/var/secrets/github-oauth";
   };
 
@@ -28,7 +42,7 @@
 
   services.metrics-proxy = {
     enable = true;
-    domain = config.services.multi-packit.domain;
+    domain = config.services.packit.domain;
     endpoints."node_exporter" = {
       upstream = "http://127.0.0.1:${toString config.services.prometheus.exporters.node.port}/metrics";
       labels.job = "machine-metrics";

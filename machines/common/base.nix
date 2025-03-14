@@ -2,12 +2,12 @@
 # It won't enable any of packit/outpack/metrics, see `services.nix` for that.
 { self, config, lib, pkgs, self', inputs, ... }: {
   imports = [
-    ../../modules/multi-packit.nix
-    ../../modules/vault.nix
+    ../../modules/metrics-proxy.nix
+    ../../modules/orderly-runner.nix
     ../../modules/outpack.nix
     ../../modules/packit-api.nix
-    ../../modules/orderly-runner.nix
-    ../../modules/metrics-proxy.nix
+    ../../modules/packit.nix
+    ../../modules/vault.nix
     ./acme.nix
     ./tools.nix
     ./configuration-info.nix

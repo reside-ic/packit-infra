@@ -5,7 +5,7 @@ from shlex import quote
 
 machine.wait_for_unit("multi-user.target")
 
-api_url = "https://localhost/reside/packit/api"
+api_url = "https://reside.localhost/packit/api"
 
 response = machine.succeed(f"curl -sSfk {api_url}/auth/config")
 data = json.loads(response)
@@ -34,7 +34,7 @@ with subtest("Can login with service token"):
     payload = quote(keyset.export(private_keys = False))
     machine.succeed(f"curl -sSfk http://127.0.0.1:81/jwks.json -X PUT --data-raw {payload}")
 
-    audience = "https://localhost:8443/reside"
+    audience = "https://reside.localhost:8443"
     jwt = JWT(
         header = { "alg": "RS256" },
         claims = { "iss": "https://token.actions.githubusercontent.com", "aud": audience }
