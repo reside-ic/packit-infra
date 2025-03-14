@@ -72,7 +72,7 @@ let
   hostname = config.networking.hostName;
   sourceInfoMetrics = pkgs.runCommand "${hostname}-source-info.prom" { } ''
     cat >$out <<EOF
-    nixos_source_info{hostname="${hostname}", revision="${rev}", narHash="$(cat ${systemHash})"}
+    nixos_source_info{hostname="${hostname}", revision="${rev}", narHash="$(cat ${systemHash})"} 1
     EOF
   '';
 
