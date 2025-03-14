@@ -10,6 +10,7 @@
     ../../modules/metrics-proxy.nix
     ./acme.nix
     ./tools.nix
+    ./configuration-info.nix
     inputs.disko.nixosModules.disko
   ];
 
