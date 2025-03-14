@@ -44,7 +44,7 @@
 let
   # Export the NAR hash of a derivation, writing it to a file.
   #
-  # By setting `__structuredAttrs`, Nix provide a `NIX_ATTRS_JSON_FILE`
+  # By setting `__structuredAttrs`, Nix provides a `NIX_ATTRS_JSON_FILE`
   # environment variable pointing to a JSON with lots of metadata about the
   # build context. Using `exportReferencesGraph`, that file includes
   # information about the given path, including its NAR hash.
