@@ -13,6 +13,7 @@ assert data == {
   "enableAuth": True,
   "enableBasicLogin": True,
   "enableGithubLogin": False,
+  "enablePreAuthLogin": False,
 }
 
 with subtest("Can login with username and password"):
