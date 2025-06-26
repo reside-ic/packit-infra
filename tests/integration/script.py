@@ -50,3 +50,10 @@ with subtest("Can login with service token"):
     data = json.loads(response)
     assert data["status"] == "success"
 
+# This is a very minimal test, just making sure the orderly.runner API can start.
+with subtest("orderly.runner"):
+    response = machine.wait_until_succeeds("curl -sSfk http://localhost:8240")
+    data = json.loads(response)
+    assert data["status"] == "success"
+    assert "orderly2" in data["data"]
+    assert "orderly.runner" in data["data"]

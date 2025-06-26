@@ -22,5 +22,6 @@ fi
 drvPath=$(jq --arg host "$host" -r '.[$host].drvPath' $VM_CONFIGURATIONS)
 mainProgram=$(jq --arg host "$host" -r '.[$host].mainProgram' $VM_CONFIGURATIONS)
 
-exec "$(nix-store --realise "$drvPath")/bin/$mainProgram" \
+storePath=$(nix-store --realise "$drvPath")
+exec "$storePath/bin/$mainProgram" \
    -fw_cfg name=opt/vault-token,string="$token" "${@:2}"
