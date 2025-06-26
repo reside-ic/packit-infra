@@ -40,6 +40,10 @@
 
       apps = {
         update.program = pkgs.writers.writePython3Bin "update" { } ./update.py;
+        update-image.program = pkgs.writers.writePython3Bin "update-image"
+          {
+            makeWrapperArgs = [ "--prefix PATH : ${lib.makeBinPath [ pkgs.nix-prefetch-docker ]}" ];
+          } ./update-image.py;
 
         update-ssh-keys.program = pkgs.writeShellApplication {
           name = "update-ssh-keys";

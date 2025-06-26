@@ -29,6 +29,11 @@ pkgs.testers.runNixOSTest {
       };
     };
 
+    services.orderly-runner = {
+      enable = true;
+      workers = 1;
+    };
+
     # This sets up an additional HTTP service on port 81 to serve JWK keys.
     # The server supports GET and PUT, allowing the test script to upload its own keys
     systemd.tmpfiles.rules = [ "d /var/www 755 nginx nginx" ];

@@ -1,17 +1,14 @@
 { self, pkgs, config, lib, ... }:
 let
   inherit (lib) types;
-  imageJson = lib.importJSON ../packages/orderly-runner/image.json;
-
-  runnerImage = "${imageJson.finalImageName}:${imageJson.finalImageTag}";
+  image = pkgs.dockerTools.pullImage (lib.importJSON ../packages/orderly-runner/image.json);
 
   REDIS_URL = "redis://localhost";
   ORDERLY_RUNNER_QUEUE_ID = "orderly.runner.queue";
 
   getOrderlyRunnerContainer = { name, cmdFlags, entrypoint }: {
     "${name}" = {
-      imageFile = pkgs.dockerTools.pullImage imageJson;
-      image = runnerImage;
+      image = "docker-archive:${image}";
       extraOptions = [ "--network=host" "--pull=never" ];
       environment = { inherit REDIS_URL ORDERLY_RUNNER_QUEUE_ID; };
       entrypoint = entrypoint;
@@ -32,7 +29,7 @@ let
       --env "ORDERLY_RUNNER_QUEUE_ID=${ORDERLY_RUNNER_QUEUE_ID}" \
       --env "REDIS_URL=${REDIS_URL}" \
       --rm --tty --interactive \
-      "${runnerImage}" R "$@"
+      "docker-archive:${image}" R "$@"
   '';
 in
 {

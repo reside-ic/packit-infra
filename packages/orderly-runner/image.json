@@ -1,7 +1,7 @@
 {
-  "imageName": "mrcide/orderly.runner",
-  "imageDigest": "sha256:0b89666b4b000fedd033baea7eceedff771a841ef7dd809a788a76f3d3e8d11d",
-  "sha256": "sha256-9WduEJ8QnxWQDlKJInUTj6TP+JcYMvsX4A7jur9FRSw=",
-  "finalImageName": "mrcide/orderly.runner",
-  "finalImageTag": "main-0b89666b4b000fedd033baea7eceedff771a841ef7dd809a788a76f3d3e8d11d"
+  "imageName": "ghcr.io/mrc-ide/orderly.runner",
+  "imageDigest": "sha256:ffbb0116b5ce5dddd78bc0e0aa3dae141c13a944ad1a8cc7cbed8ae632d28e60",
+  "sha256": "0k2myx65x1xm0rqvjzdz6q5x8kvfyysbp9zw2yrsna10j01vy4av",
+  "finalImageName": "ghcr.io/mrc-ide/orderly.runner",
+  "finalImageTag": "main"
 }

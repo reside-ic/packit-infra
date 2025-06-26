@@ -30,10 +30,6 @@ The automatic's pull request description includes the list of commits that were
 added compared to the `main` branch of `packit-infra`. The list of commits
 should help you identify whether the update is particularly risky.
 
-> [!IMPORTANT]
-> Updating orderly.runner is currently a manual process. This will be automated
-> as well soon.
-
 ## 2. Run VM integration tests
 
 This repository contains an integration test that largely mimicks the staging

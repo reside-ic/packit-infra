@@ -1,6 +1,6 @@
 # This workflow runs nightly and pulls in new version of packit and
 # outpack_server into this repository, by running the `scripts/update.py`
-# script.
+# script. It also updates orderly.runner using `scripts/update-image.py`.
 #
 # If any updates are found, a pull request is created with the changes. If an
 # open pull request already exists, it is updated instead.
@@ -31,6 +31,10 @@ on:
         description: 'Git ref from which to update packit'
         type: string
 
+      orderly-runner:
+        description: 'Tag of the orderly.runner image'
+        type: string
+
 jobs:
   update:
     runs-on: ubuntu-22.04
@@ -46,6 +50,8 @@ jobs:
         run: nix run .#update outpack_server -- --ref ${{ inputs.outpack_server || 'HEAD' }} --write-commit-log ${{ runner.temp }}/outpack_server.md
       - name: Update packit
         run: nix run .#update packit -- --ref ${{ inputs.packit || 'HEAD' }} --write-commit-log ${{ runner.temp }}/packit.md
+      - name: Update orderly.runner
+        run: nix run .#update-image orderly-runner -- --tag ${{ inputs.orderly-runner || 'main' }}
 
       - name: Prepare PR message
         uses: actions/github-script@v7
