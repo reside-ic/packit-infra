@@ -87,7 +87,7 @@ let
           type = types.enum [ "basic" "github" ];
         };
         github = {
-          redirect_url = lib.mkOption {
+          redirectUrl = lib.mkOption {
             description = "URL to which to redirect following an authentication attempt";
             type = types.str;
           };
@@ -109,6 +109,11 @@ let
           policies = lib.mkOption {
             type = types.listOf (lib.types.submodule policyModule);
             default = [ ];
+          };
+        };
+        device = {
+          verificationUri = lib.mkOption {
+            type = types.str;
           };
         };
       };
@@ -135,6 +140,7 @@ let
         type = types.listOf types.str;
         default = [ ];
       };
+
       environmentFiles = lib.mkOption {
         type = types.listOf types.path;
         default = [ ];
@@ -209,8 +215,9 @@ in
         PACKIT_CORS_ALLOWED_ORIGINS = lib.concatStringsSep "," instanceCfg.corsAllowedOrigins;
         PACKIT_AUTH_METHOD = instanceCfg.authentication.method;
         PACKIT_ORDERLY_RUNNER_ENABLED = if (instanceCfg.runner.enable) then "true" else "false";
+        PACKIT_DEVICE_AUTH_URL = instanceCfg.authentication.device.verificationUri;
       } // (lib.optionalAttrs (instanceCfg.authentication.method == "github") {
-        PACKIT_AUTH_REDIRECT_URL = instanceCfg.authentication.github.redirect_url;
+        PACKIT_AUTH_REDIRECT_URL = instanceCfg.authentication.github.redirectUrl;
         PACKIT_AUTH_GITHUB_ORG = instanceCfg.authentication.github.org;
         PACKIT_AUTH_GITHUB_TEAM = instanceCfg.authentication.github.team;
       }) // (lib.optionalAttrs instanceCfg.runner.enable {

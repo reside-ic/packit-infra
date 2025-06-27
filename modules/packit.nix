@@ -82,8 +82,9 @@ let
       outpackServerUrl = "http://127.0.0.1:${toString ports."${name}".outpack}";
       orderlyRunnerApiUrl = "http://127.0.0.1:${toString orderlyRunnerCfg.port}";
       authentication = {
-        github.redirect_url = "https://${name}.${cfg.domain}/redirect";
+        github.redirectUrl = "https://${name}.${cfg.domain}/redirect";
         service.audience = lib.mkIf (lib.length config.authentication.service.policies > 0) "https://${name}.${cfg.domain}";
+        device.verificationUri = "https://${name}.${cfg.domain}/device";
       };
       corsAllowedOrigins = [ "https://${name}.${cfg.domain}" ];
 
