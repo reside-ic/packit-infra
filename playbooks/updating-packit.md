@@ -35,12 +35,8 @@ should help you identify whether the update is particularly risky.
 This repository contains an integration test that largely mimicks the staging
 and production environments within a virtual machine. The test suite doesn't
 yet cover a lot of behaviour, altough this will hopefully be expanded in the
-future.
-
-A separate GitHub actions workflow should run on the pull request that was
-automatically opened by the update workflow. Unfortunately GitHub doesn't run
-workflows on pull requests opened by other workflows[^workflow-loop]. You can
-make the tests run by closing and re-opening the pull request.
+future. A separate GitHub actions workflow will run on the pull request that
+was automatically opened.
 
 The tests can also be run locally by checking out the pull request and running
 the following command:
@@ -48,9 +44,6 @@ the following command:
 ```sh
 nix flake check -L
 ```
-
-[^workflow-loop]: Presumably, this is to avoid an infinite cycle of a workflow
-    triggering itself.
 
 ## 3. Deploy the pull request to `wpia-packit-dev`
 

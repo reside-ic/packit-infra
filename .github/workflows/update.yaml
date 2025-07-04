@@ -85,7 +85,17 @@ jobs:
             ${{ steps.prepare-message.outputs.title }}
 
             ${{ steps.prepare-message.outputs.body }}
+
           reviewers: plietar
+
+          # Pull requests created by a GitHub action's GITHUB_TOKEN don't run
+          # actions on them. The workaround is to use a token tied to an
+          # account to do this. We use the vimc-robot account to do this.
+          #
+          # It will push the changes to its own fork and create a pull request
+          # from there.
+          token: ${{ secrets.VIMC_ROBOT_GITHUB_TOKEN }}
+          push-to-fork: vimc-robot/packit-infra
 
       - name: Comment hint
         uses: thollander/actions-comment-pull-request@v3
