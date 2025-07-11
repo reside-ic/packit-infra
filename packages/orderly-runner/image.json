@@ -1,7 +1,7 @@
 {
   "imageName": "ghcr.io/mrc-ide/orderly.runner",
-  "imageDigest": "sha256:ffbb0116b5ce5dddd78bc0e0aa3dae141c13a944ad1a8cc7cbed8ae632d28e60",
-  "sha256": "0k2myx65x1xm0rqvjzdz6q5x8kvfyysbp9zw2yrsna10j01vy4av",
+  "imageDigest": "sha256:93f48b8d96b7af23ccb09bf36bb416fc9d170708f0980e54c4fca246a3e023ae",
+  "sha256": "090la6p6zn1m9kg3k39x2h54jb4hzlymidyld14cmg29cbb7pjr0",
   "finalImageName": "ghcr.io/mrc-ide/orderly.runner",
   "finalImageTag": "main"
 }
