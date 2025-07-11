@@ -2,9 +2,9 @@
   "src": {
     "owner": "mrc-ide",
     "repo": "packit",
-    "rev": "b815b6d32d6b175a063b67d30fe6ef1774467b63",
-    "hash": "sha256-36xVF8sQ/SnO0yG5lEpLuQ4wjlSjDnXwYi4Px004mI0="
+    "rev": "4f9018f42f32b73ecbd7281e7b13a972b9580f08",
+    "hash": "sha256-ik+F55uKqKAQvlVZqDboTjoEp6NVxCXjHZ0HMiCZoIk="
   },
   "gradleDepsHash": "sha256-0IhSQavqZhUvZxozlzo0wsySrfYUDkB0qtVQjb2fc3k=",
-  "npmDepsHash": "sha256-4p2tgvfZqHVCDeBj50CB6H4JgBgpRin5zcetEGlkFWA="
+  "npmDepsHash": "sha256-pWiz+OSzLqjW/nCCL0rCbrjwKEc0NvfaYVhl8rZkP5k="
 }
