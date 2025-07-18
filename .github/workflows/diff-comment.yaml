@@ -1,0 +1,71 @@
+# The diff workflow can run in the context of a pull request from a forked
+# repository and does not have sufficient permissions to post a comment.
+#
+# This workflow runs once it has completed and has full permissions. It
+# downloads the artifact from the diff pull request and posts it as a
+# comment.
+on:
+  workflow_run:
+    workflows: [ diff ]
+    types: [ completed ]
+
+jobs:
+  on-success:
+    runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    permissions:
+      pull-requests: write
+      actions: read
+
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          run-id: ${{ github.event.workflow_run.id }}
+          name: comment
+
+      # We need to get the pull request's number in order to post the comment.
+      # This is normally available in the action's payload, as
+      # `workflow_run.pull_requests[0].number`. Unfortunately the pull_requests
+      # object is empty if the pull requests originated from a forked
+      # repository.
+      #
+      # The documented workaround is to look in the repository for a PR
+      # matching the head branch name. The head name needs to include the owner
+      # of the fork, in the format `${owner}:${branch}`.
+      #
+      # Because we only consider open pull requests, this should be unique.
+      # Just in case, we sort by created time and take the most recent one.
+      #
+      # See https://github.com/orgs/community/discussions/25220
+      # https://github.com/docker-mailserver/docker-mailserver/pull/4267#issuecomment-2484565209
+      #
+      # Why must GitHub make everything difficult for us.
+      - name: Extract the pull request metadata for the workflow run
+        id: pull-request-metadata
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const workflow_run = context.payload.workflow_run;
+            const head = `${workflow_run.head_repository.owner.login}:${workflow_run.head_branch}`;
+
+            const { data } = await github.rest.pulls.list({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              head: head,
+              sort: 'created',
+              order: 'desc',
+              state: 'open',
+              per_page: 1,
+            });
+            return data[0];
+
+      - uses: thollander/actions-comment-pull-request@v3
+        with:
+          pr-number: ${{ fromJSON(steps.pull-request-metadata.outputs.result).number }}
+
+          file-path: comment.txt
+          # To avoid flooding the PR with comments, we delete any previous
+          # comment and create a new one.
+          comment-tag: nix-diff
+          mode: recreate
