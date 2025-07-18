@@ -1,0 +1,45 @@
+# The diff workflow can run in the context of a pull request from a forked
+# repository and does not have sufficient permissions to post a comment.
+#
+# This workflow runs once it has completed and has full permissions. It
+# downloads the artifact from the diff pull request and posts it as a
+# comment.
+on:
+  workflow_run:
+    workflows: [ diff ]
+    types: [ completed ]
+
+jobs:
+  on-success:
+    runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    permissions:
+      pull-requests: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          run-id: ${{ github.event.workflow_run.id }}
+
+      - name: Extract the metadata for the workflow run
+        id: workflow-metadata
+        uses: actions/github-script@v7
+        env:
+          WORKFLOW_RUN_ID: ${{ github.event.workflow_run.id }}
+        with:
+          script: |
+            return github.actions.getWorkflowRun({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              run_id: github.event.workflow_run.id
+            })
+
+      - uses: thollander/actions-comment-pull-request@v3
+        with:
+          pr-number: ${{ fromJSON(steps.workflow-metadata.outputs.result).pull_requests[0].number }}
+
+          file-path: comment.txt
+          # To avoid flooding the PR with comments, we delete any previous
+          # comment and create a new one.
+          comment-tag: nix-diff
+          mode: recreate
+            

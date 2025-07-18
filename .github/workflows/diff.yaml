@@ -4,31 +4,33 @@ on:
 jobs:
   diff:
     name: Compare
-    runs-on: ubuntu-22.04
-    permissions:
-      pull-requests: write
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
         with:
+          # We need to fetch everything so that the Git repo includes both the base and PR refs
           fetch-depth: 0
+
       - uses: nixbuild/nix-quick-install-action@v27
       - name: Run nix-diff
         run: |
           hostnames=$(nix eval --raw ".#nixosConfigurations" --apply 'x: builtins.concatStringsSep " " (builtins.attrNames x)')
           for h in $hostnames; do
-            attribute="nixosConfigurations.$h.config.system.build.toplevel"
+            # This uses a variant of the configuration that does not embed the Git commit into it, which reduces the noise in diffs.
+            attribute="nixosConfigurations.$h.config.system.build.withoutConfigurationInfo.config.system.build.toplevel"
             target=$(nix path-info --derivation ".#$attribute")
-            current=$(nix path-info --derivation ".?rev=${{ github.event.pull_request.base.sha }}&ref=${{ github.base_ref }}#$attribute")
+            current=$(nix path-info --derivation ".?rev=${{ github.event.pull_request.base.sha }}#$attribute")
             printf '<details><summary>Comparing system configuration for %s against %s branch</summary>\n\n' "$h" "${{ github.base_ref }}" >> comment.txt
             nix-diff --line-oriented $current $target | sed 's/^/    /' >> comment.txt
             printf '\n\n</details>\n' >> comment.txt
           done
         shell: nix shell --inputs-from . nixpkgs#nix-diff --command bash -l {0}
 
-      - uses: thollander/actions-comment-pull-request@v3
+      # We upload the comment as an artifact. This workflow can run in the
+      # context of a pull request from a forked repository and does not have
+      # sufficient permissions to post a comment. The comment posting is done
+      # by a separate workflow `diff-comment`.
+      - uses: actions/upload-artifact@v4
         with:
-          file-path: comment.txt
-          # To avoid flooding the PR with comments, we delete any previous
-          # comment and create a new one.
-          comment-tag: nix-diff
-          mode: recreate
+          path: comment.txt
+          if-no-files-found: error
