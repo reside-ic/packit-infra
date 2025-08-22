@@ -10,14 +10,17 @@
 # This script does the same, but in an automated fashion.
 
 import argparse
+import github
 import json
 import os
 import os.path
 import re
 import subprocess
 import sys
+
+from concurrent.futures import ThreadPoolExecutor
 from contextlib import nullcontext
-from urllib.request import urlopen, Request
+from github import Github
 from urllib.parse import urljoin
 
 PRELUDE = """
@@ -38,23 +41,60 @@ in
 SUPPORTED_DEPS = {"gradle", "cargo", "npm"}
 
 
-def github_api(path):
-    url = urljoin("https://api.github.com", path)
-    request = Request(url)
-    if token := os.environ.get("GITHUB_TOKEN"):
-        request.add_header("Authorization", f"Bearer {token}")
-    return json.load(urlopen(request))
+def resolve_prs_concurrently(repo, commits):
+    """
+    Map a list of commits to their corresponding pull request.
+
+    Returns a dictionary from commit ID to Pull Request object. If no PRs match
+    a commit (eg. the commit was directly pushed to a branch), the dictionary
+    entry maps to None. If multiple PRs match a commit, an arbitrary pull
+    request is returned.
+    """
+    def f(c):
+        pulls = c.get_pulls()
+        return (c.sha, next(iter(pulls), None))
+
+    # This needs one API call to GitHub per commit, which can be very slow.
+    # Doing it concurrently helps a lot.
+    with ThreadPoolExecutor(max_workers=16) as executor:
+        return dict(executor.map(f, commits))
 
 
-def resolve_git_ref(owner, repo, ref):
-    response = github_api(f"/repos/{owner}/{repo}/commits/{ref}")
-    return response["sha"]
+def format_link(text, url):
+    """Format a link as Markdown."""
+    return f"[{text}]({url})"
 
 
-def commit_log(owner, repo, base, head):
-    response = github_api(f"/repos/{owner}/{repo}/compare/{base}...{head}")
-    commits = [c["commit"] for c in response["commits"]]
-    messages = [c["message"].splitlines()[0] for c in commits]
+def commit_log(client, owner, repo, base, head, *, resolve_prs):
+    # We use the redirect subdomain to avoid creating backlinks on all the
+    # pull-requests.
+    # https://docs.github.com/en/get-started/writing-on-github/working-with-advanced-formatting/autolinked-references-and-urls#avoiding-backlinks-to-linked-references
+    base_url = f"https://redirect.github.com/{owner}/{repo}/"
+
+    messages = []
+    seen = set()
+
+    r = client.get_repo(f"{owner}/{repo}")
+    commits = list(r.compare(base, head).commits)
+
+    if resolve_prs:
+        prs = resolve_prs_concurrently(r, commits)
+    else:
+        prs = {}
+
+    for c in commits:
+        pr = prs.get(c.sha)
+        if pr is None:
+            title = c.commit.message.splitlines()[0]
+            url = urljoin(base_url, f"commit/{c.sha}")
+            link = format_link(c.sha[:7], url)
+            messages.append(f"{title} ({link})")
+        elif pr.number not in seen:
+            seen.add(pr.number)
+            url = urljoin(base_url, f"pull/{pr.number}")
+            link = format_link(f"#{pr.number}", url)
+            messages.append(f"{pr.title} ({link})")
+
     return messages
 
 
@@ -158,7 +198,18 @@ def open_output(path):
         return nullcontext(sys.stdout)
 
 
+def create_client(args):
+    if token := os.environ.get("GH_TOKEN"):
+        auth = github.Auth.Token(token)
+    else:
+        auth = None
+
+    return Github(auth=auth)
+
+
 def update(args):
+    client = create_client(args)
+
     metadata = evaluate_metadata(args.name)
     if args.owner is None:
         args.owner = metadata["owner"]
@@ -174,7 +225,7 @@ def update(args):
     if args.output is None:
         args.output = os.path.join("packages", args.name, "sources.json")
 
-    rev = resolve_git_ref(args.owner, args.repo, args.ref)
+    rev = client.get_repo(f"{args.owner}/{args.repo}").get_commit(args.ref).sha
 
     if metadata["rev"] == rev:
         print(f"{args.name} is already up-to-date at {rev}")
@@ -182,8 +233,9 @@ def update(args):
             return
     else:
         print(f"Updating {args.name} from {metadata['rev']} to {rev}")
-        messages = commit_log(args.owner, args.repo, metadata["rev"], rev)
-
+        messages = commit_log(
+            client, args.owner, args.repo, metadata["rev"], rev,
+            resolve_prs=args.resolve_prs)
         with open_output(args.write_commit_log) as f:
             f.writelines(f"- {m}\n" for m in messages)
 
@@ -227,6 +279,16 @@ if __name__ == "__main__":
         "--force",
         action="store_true",
         help="Fetch the sources even if the commit sha is identical.",
+    )
+    parser.add_argument(
+        "--resolve-prs",
+        action="store_true",
+        help="""
+            Use pull request titles and links intead of commits when
+            generating the changelog. This requires a lot of requests to
+            the GitHub API, which is slow and likely to exceed the rate
+            limit if the GH_TOKEN environment variable is not configured.
+        """
     )
     parser.add_argument("name")
 
