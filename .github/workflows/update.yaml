@@ -37,19 +37,20 @@ on:
 
 jobs:
   update:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     permissions:
       pull-requests: write
       contents: write
-
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
       - uses: actions/checkout@v4
       - uses: nixbuild/nix-quick-install-action@v27
 
       - name: Update outpack_server
-        run: nix run .#update outpack_server -- --ref ${{ inputs.outpack_server || 'HEAD' }} --write-commit-log ${{ runner.temp }}/outpack_server.md
+        run: nix run .#update outpack_server -- --ref ${{ inputs.outpack_server || 'HEAD' }} --write-commit-log ${{ runner.temp }}/outpack_server.md --resolve-prs
       - name: Update packit
-        run: nix run .#update packit -- --ref ${{ inputs.packit || 'HEAD' }} --write-commit-log ${{ runner.temp }}/packit.md
+        run: nix run .#update packit -- --ref ${{ inputs.packit || 'HEAD' }} --write-commit-log ${{ runner.temp }}/packit.md --resolve-prs
       - name: Update orderly.runner
         run: nix run .#update-image orderly-runner -- --tag ${{ inputs.orderly-runner || 'main' }}
 
