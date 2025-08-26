@@ -39,7 +39,11 @@
       };
 
       apps = {
-        update.program = pkgs.writers.writePython3Bin "update" { } ./update.py;
+        update.program = pkgs.writers.writePython3Bin "update"
+          {
+            libraries = [ pkgs.python3.pkgs.PyGithub ];
+          } ./update.py;
+
         update-image.program = pkgs.writers.writePython3Bin "update-image"
           {
             makeWrapperArgs = [ "--prefix PATH : ${lib.makeBinPath [ pkgs.nix-prefetch-docker ]}" ];
