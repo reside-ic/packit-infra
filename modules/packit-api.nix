@@ -201,6 +201,11 @@ in
           let arguments = lib.mapAttrsToList (k: v: "--${k}=${v}") (flattenProperties instanceCfg.properties); in
           lib.escapeShellArgs ([ "${self'.packages.packit-api}/bin/packit-api" ] ++ arguments);
         EnvironmentFile = instanceCfg.environmentFiles;
+
+        # Packit can be a bit slow to start, especially when starting a few
+        # instances simultaneously. The default systemd timeout is 90s which we
+        # would hit occasionally.
+        TimeoutStartSec = "5min";
       };
 
       environment = {
