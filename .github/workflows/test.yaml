@@ -6,19 +6,10 @@ on:
 jobs:
   build:
     name: Build
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
-
-      # We need this to be able to run VM-based tests
-      # https://github.blog/changelog/2023-02-23-hardware-accelerated-android-virtualization-on-actions-windows-and-linux-larger-hosted-runners/
-      - name: Enable KVM group perms
-        run: |
-          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
-          sudo udevadm control --reload-rules
-          sudo udevadm trigger --name-match=kvm
-
-      - uses: nixbuild/nix-quick-install-action@v27
+      - uses: nixbuild/nix-quick-install-action@v34
       - uses: nix-community/cache-nix-action@v6
         with:
           primary-key: nix-${{ runner.os }}-${{ github.sha }}
@@ -26,6 +17,13 @@ jobs:
           # Only save the cache for pushes to main. This avoids blowing up the
           # cache allowance with PR builds.
           save: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+
+      # I don't understand why this is needed and I have no interest in finding out.
+      # https://discourse.nixos.org/t/building-docker-image-in-github-actions-leads-to-skopeo-related-issues/40636/4
+      - run: |
+          sudo chmod 755 /run/containers
+          sudo mkdir -p "/run/containers/$(id -u runner)"
+          sudo chown runner: "/run/containers/$(id -u runner)"
 
       - run: |
           hostnames=$(nix eval --raw ".#nixosConfigurations" --apply 'x: builtins.concatStringsSep " " (builtins.attrNames x)')
