@@ -15,6 +15,7 @@ curl --proto '=https' --tlsv1.2 -sSf -L https://install.determinate.systems/nix 
 - [Provisioning a new machine](playbooks/new-machine-provisioning.md)
 - [Deploying a new instance](playbooks/new-packit-instance.md)
 - [Wiping a Packit instance](playbooks/wipe-packit-instance.md)
+- [Upgrading to a new version of PostgreSQL](playbooks/upgrading-postgres.md)
 
 ## How do I?
 ### How do I deploy to the server?
@@ -40,12 +41,13 @@ typically need to do it. Deploying will do it implicitely.
 nix run .#diff <hostname>
 ```
 
-This will download the system that is currently running on the server and
-compare it with what would be deployed using [nix-diff](https://github.com/Gabriella439/nix-diff).
+This will download the configuration that is currently running on the server
+and compare it with what would be deployed using
+[nix-diff](https://github.com/Gabriella439/nix-diff).
 
 Alternatively, when opening a pull request on GitHub an action will run and
-compute the difference against the main branch for all machines, and post the
-result as a comment.
+compute the difference against the PR's target branch for all machines. It will
+post the result as a comment.
 
 ### How do I start a local VM?
 
@@ -79,33 +81,8 @@ nix run .#integration-test
 nix run .#integration-test -- --interactive
 ```
 
-The second command starts a Python session which may be used to interact with the test machine.
-
-The full checks can be run using the following command:
-```sh
-nix flake check -L
-```
-
-Depending on your host system and how Nix was installed on it, this may fail
-with a "qemu-kvm: failed to initialize kvm: Permission denied" error. This
-typically means that `/dev/kvm` and is not writable by the Nix build users.
-
-This can be fixed by changing the devices ACLs (Access Control Lists) to make it writable by all
-members of the nixbld group:
-
-```sh
-sudo setfacl -m g:nixbld:rw /dev/kvm
-```
-
-The above command will probably not persist across reboots. For that to work,
-create a udev rule using the following commands:
-
-```sh
-sudo tee /etc/udev/rules.d/50-nixbld-kvm.rules <<EOF
-KERNEL=="kvm", RUN+="/bin/setfacl -m g:nixbld:rw $env{DEVNAME}"
-EOF
-sudo udevadm control --reload-rules && sudo udevadm trigger
-```
+The second command starts a Python session which may be used to interact with
+the test machine.
 
 ### How do I add new SSH keys?
 
@@ -156,3 +133,33 @@ nix flake update
 ```
 
 To switch to a new major version, you should edit the URL at the top of `flake.nix`.
+
+## Troubleshooting
+
+### Could not access KVM kernel module: Permission denied
+
+If you use `nix flake check` to run the integration tests they may fail with
+the following error:
+
+```
+vm-test-run-integration> qemu-system-x86_64: Could not access KVM kernel module: Permission denied
+vm-test-run-integration> qemu-system-x86_64: failed to initialize kvm: Permission denied
+```
+
+This typically means that `/dev/kvm` and is not writable by the Nix build
+users. This can be fixed by changing the devices ACLs (Access Control Lists) to
+make it writable by all members of the nixbld group:
+
+```sh
+sudo setfacl -m g:nixbld:rw /dev/kvm
+```
+
+The above command will not persist across reboots. For that to work, create a
+udev rule using the following commands:
+
+```sh
+sudo tee /etc/udev/rules.d/50-nixbld-kvm.rules <<EOF
+KERNEL=="kvm", RUN+="/bin/setfacl -m g:nixbld:rw $env{DEVNAME}"
+EOF
+sudo udevadm control --reload-rules && sudo udevadm trigger
+```

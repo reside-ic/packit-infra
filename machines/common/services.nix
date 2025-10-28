@@ -28,9 +28,10 @@
       host  all      all     ::1/128        trust
     '';
 
-    # Read https://nixos.org/manual/nixos/stable/#module-services-postgres-upgrading
-    # before updating this.
+    # Read playbooks/upgrading-postgres.md before changing the PostgreSQL
+    # versions below.
     package = pkgs.postgresql_16;
+    upgradePackage = pkgs.postgresql_17;
   };
 
   services.packit = {

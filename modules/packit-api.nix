@@ -184,8 +184,12 @@ in
   config.systemd.services = foreachInstance (name: instanceCfg: lib.mkIf instanceCfg.enable {
     "packit-api-${name}" = {
       description = "Packit API ${name}";
-      wantedBy = [ "multi-user.target" ];
-      wants = [ "postgresql.service" ];
+      wantedBy = [
+        "packit-api.target"
+        "multi-user.target"
+      ];
+      partOf = [ "packit-api.target" ];
+      requires = [ "postgresql.service" ];
       after = [ "postgresql.service" ];
 
       serviceConfig = {
@@ -232,4 +236,12 @@ in
       });
     };
   });
+
+  # This allows all instances of Packit API to be started and stopped by
+  # using packit-api.target.
+  config.systemd.targets.packit-api = {
+    description = "Target for all Packit API services";
+    wantedBy = [ "multi-user.target" ];
+    after = [ "network.target" ];
+  };
 }

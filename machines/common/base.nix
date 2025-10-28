@@ -8,6 +8,7 @@
     ../../modules/packit-api.nix
     ../../modules/packit.nix
     ../../modules/vault.nix
+    ../../modules/postgres-upgrade.nix
     ./acme.nix
     ./tools.nix
     ./configuration-info.nix
