@@ -112,5 +112,5 @@ with subtest("Can login with service token"):
 with subtest("orderly.runner"):
     response = curl(machine, "http://localhost:8240", wait=True)
     assert response["status"] == "success"
-    assert "orderly2" in response["data"]
+    assert "orderly" in response["data"]
     assert "orderly.runner" in response["data"]
