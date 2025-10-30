@@ -38,7 +38,7 @@ let
 in
 """
 
-SUPPORTED_DEPS = {"gradle", "cargo", "npm"}
+SUPPORTED_DEPS = {"gradle", "npm"}
 
 
 def resolve_prs_concurrently(repo, commits):

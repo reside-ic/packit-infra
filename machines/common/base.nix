@@ -48,5 +48,5 @@
   # derivations to run `nix-diff` against a running system.
   nix.settings.keep-derivations = true;
 
-  system.stateVersion = "24.11";
+  system.stateVersion = "25.05";
 }

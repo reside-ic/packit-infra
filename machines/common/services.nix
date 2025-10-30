@@ -1,4 +1,4 @@
-{ config, ... }:
+{ config, pkgs, ... }:
 {
   services.nginx = {
     enable = true;
@@ -27,6 +27,10 @@
       host  all      all     127.0.0.1/32   trust
       host  all      all     ::1/128        trust
     '';
+
+    # Read https://nixos.org/manual/nixos/stable/#module-services-postgres-upgrading
+    # before updating this.
+    package = pkgs.postgresql_16;
   };
 
   services.packit = {
