@@ -21,7 +21,7 @@ let
     export NEWBIN="${newPostgres}/bin"
 
     export OLDDATA="${cfg.dataDir}"
-    export OLDBIN="${cfg.finalPackage}/bin"
+    export OLDBIN="${oldPostgres}/bin"
 
     install -d -m 0700 -o postgres -g postgres "$NEWDATA"
     cd "$NEWDATA"
