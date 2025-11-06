@@ -13,8 +13,8 @@ version. The broad steps are:
 To make the migration easier and automate the process, we use a script defined
 in [`modules/postgres-upgrade.nix`][postgres-upgrade.nix].
 
-The steps below assuming we are upgrading from PostgreSQL 16 to 17. Adjust the
-numbers are needed to match your needs.
+The steps below assume we are upgrading from PostgreSQL 16 to 17. Adjust the
+numbers as needed to match your needs.
 
 1. Edit your local copy of [`machines/common/services.nix`][services.nix],
    setting a value for `upgradePackage`:
