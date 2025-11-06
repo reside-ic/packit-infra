@@ -9,9 +9,11 @@
 }:
 let
   cfg = config.services.postgresql;
-  oldPostgres = cfg.finalPackage;
-  newPostgres = cfg.upgradePackage;
-  upgradeScript = pkgs.writeScriptBin "upgrade-pg-cluster" ''
+
+  oldPostgres = cfg.finalPackage; # this already includes cfg.extensions
+  newPostgres = cfg.upgradePackage.withPackages cfg.extensions;
+
+  upgradeScript = pkgs.writeShellScriptBin "upgrade-pg-cluster" ''
     set -eux
 
     # packit-api has a Requires on postgresql so will stop automatically.
