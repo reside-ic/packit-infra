@@ -40,7 +40,7 @@ numbers as needed to match your needs.
 1. Deploy the modified configuration to the target server.
 1. Make sure everything looks as expected, by checking the server's logs and logging into Packit.
 1. Connect to the server and run `/var/lib/postgresql/17/delete_old_cluster.sh` to delete the old files.
-1. Make a PR with the final changes.
+1. Make a PR with the final config changes.
 
 [nixos-postgres-upgrading]: https://nixos.org/manual/nixos/stable/#module-services-postgres-upgrading
 [postgres-upgrade.nix]: ../modules/postgres-upgrade.nix
