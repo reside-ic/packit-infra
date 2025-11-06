@@ -146,7 +146,7 @@ vm-test-run-integration> qemu-system-x86_64: Could not access KVM kernel module:
 vm-test-run-integration> qemu-system-x86_64: failed to initialize kvm: Permission denied
 ```
 
-This typically means that `/dev/kvm` and is not writable by the Nix build
+This typically means that `/dev/kvm` is not writable by the Nix build
 users. This can be fixed by changing the devices ACLs (Access Control Lists) to
 make it writable by all members of the nixbld group:
 
