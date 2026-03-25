@@ -1,5 +1,7 @@
 # packit.dide.ic.ac.uk
 
+## This repositority is archived. Our packit machines are now defined in [https://github.com/reside-ic/infra-scripts](https://github.com/reside-ic/infra-scripts) ##
+
 ## Preliminaries
 
 You need Nix installed on your local machine. You can use the
